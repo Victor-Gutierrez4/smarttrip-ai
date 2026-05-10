@@ -110,23 +110,23 @@ export default function SearchForm({ form, onChange, onSubmit }) {
         </div>
         <div className="col-12">
           <div className="budget-range-header">
-            <label className="form-label" htmlFor="maxBudget">Trip Budget</label>
-            <strong>{money.format(Number(form.maxBudget))}</strong>
+            <label className="form-label" htmlFor="maxBudget">Budget Per Night</label>
+            <strong>{money.format(Number(form.maxBudget))}+</strong>
           </div>
           <input
             className="form-range budget-range"
             id="maxBudget"
-            max="5000"
-            min="150"
-            step="50"
+            max="600"
+            min="100"
+            step="25"
             type="range"
             value={form.maxBudget}
             onChange={(event) => updateField('maxBudget', Number(event.target.value))}
           />
           <div className="range-labels">
-            <span>$150</span>
-            <span>{money.format(Math.round(Number(form.maxBudget) / duration))} per day</span>
-            <span>$5,000</span>
+            <span>$100</span>
+            <span>{money.format(Number(form.maxBudget) * duration)} total selected budget</span>
+            <span>$600+</span>
           </div>
         </div>
         <div className="col-12">

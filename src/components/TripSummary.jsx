@@ -32,7 +32,7 @@ export default function TripSummary({ summary, selectedHotel }) {
           <strong>{isOverBudget ? 'Over selected budget' : 'Within selected budget'}</strong>
           <span>
             {money.format(Math.abs(summary.budgetRemaining))}
-            {isOverBudget ? ' over' : ' remaining'} from {money.format(summary.budgetLimit)}
+            {isOverBudget ? ' over' : ' remaining'} from {money.format(summary.budgetLimit)} total selected budget
           </span>
         </div>
         {(isOverBudget || isTightBudget) && (
@@ -47,11 +47,11 @@ export default function TripSummary({ summary, selectedHotel }) {
       </div>
       <ul>
         <li>
-          <span>Selected trip budget</span>
+          <span>Total selected budget</span>
           <strong>{money.format(summary.budgetLimit)}</strong>
         </li>
         <li>
-          <span>Budget per day</span>
+          <span>Budget per night</span>
           <strong>{money.format(summary.dailyBudget)}</strong>
         </li>
         <li>

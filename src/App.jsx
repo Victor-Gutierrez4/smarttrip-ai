@@ -16,7 +16,7 @@ const defaultForm = {
   pointsText: 'Shibuya Crossing, Tokyo Tower, Akihabara',
   startDate: '2026-06-08',
   endDate: '2026-06-12',
-  maxBudget: 1850,
+  maxBudget: 350,
   roundTrip: true,
   travelers: 2
 };
@@ -38,7 +38,9 @@ function App() {
   function buildTrip(currentForm) {
     const pointsOfInterest = parsePoints(currentForm.pointsText);
     const duration = calculateTripDuration(currentForm.startDate, currentForm.endDate);
-    const budgetLevel = getBudgetLevelFromTripBudget(currentForm.maxBudget, duration, currentForm.travelers);
+    const nightlyBudget = Number(currentForm.maxBudget);
+    const totalBudget = nightlyBudget * duration;
+    const budgetLevel = getBudgetLevelFromTripBudget(totalBudget, duration, currentForm.travelers);
 
     return {
       destination: currentForm.destination,
@@ -47,11 +49,13 @@ function App() {
       dateRange: formatTripDates(currentForm.startDate, currentForm.endDate),
       duration,
       budgetLevel,
-      maxBudget: Number(currentForm.maxBudget),
+      maxBudget: totalBudget,
+      nightlyBudget,
       roundTrip: Boolean(currentForm.roundTrip),
       travelers: Number(currentForm.travelers),
       summary: calculateBudgetSummary({
         ...currentForm,
+        maxBudget: totalBudget,
         duration,
         budgetLevel,
         destination: currentForm.destination
