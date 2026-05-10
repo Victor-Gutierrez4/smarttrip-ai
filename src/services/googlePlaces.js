@@ -49,6 +49,7 @@ const fallbackProfile = {
   cuisines: ['Modern local', 'Street food', 'Regional cafe', 'Market kitchen']
 };
 const liveResultLimit = 3;
+const hotelPriceWindow = 85;
 
 function scoreFromText(text, index) {
   const seed = [...text].reduce((total, char) => total + char.charCodeAt(0), index * 17);
@@ -110,13 +111,31 @@ async function requestLiveRecommendations(path, params) {
     }));
 }
 
-function buildFallbackHotels({ destination, pointsOfInterest = [], budgetLevel = 'moderate', travelers = 1 }) {
+function normalizeNightlyBudget(value, budgetLevel = 'moderate') {
   const profile = getBudgetProfile(budgetLevel);
+  const budget = Number(value);
+
+  if (!Number.isFinite(budget) || budget <= 0) {
+    return profile.hotelNightly;
+  }
+
+  return Math.max(Math.round(budget), 100);
+}
+
+function estimateNightlyPrice({ nightlyBudget, seed, index, travelers = 1, isPremium = false }) {
+  const minimumNightly = normalizeNightlyBudget(nightlyBudget);
+  const travelerSurcharge = Math.max(travelers - 2, 0) * 20;
+  const spread = isPremium ? 140 : hotelPriceWindow;
+  const priceOffset = (seed + index * 29) % spread;
+
+  return minimumNightly + travelerSurcharge + priceOffset;
+}
+
+function buildFallbackHotels({ destination, pointsOfInterest = [], budgetLevel = 'moderate', travelers = 1, nightlyBudget }) {
   const destinationProfile = getDestinationProfile(destination);
   const seed = hashText(destination);
   const city = cityName(destination);
   const hotelStyles = getBudgetStyles(hotelStylesByBudget, budgetLevel);
-  const travelerSurcharge = Math.max(travelers - 2, 0) * 20;
 
   return hotelStyles.slice(0, 3).map((style, index) => {
     const anchor = pointsOfInterest[index % pointsOfInterest.length] || city;
@@ -126,7 +145,7 @@ function buildFallbackHotels({ destination, pointsOfInterest = [], budgetLevel =
       id: `hotel-${index}`,
       name: `${neighborhood} ${style}`,
       rating: Number(scoreFromText(destination + style + neighborhood, index).toFixed(1)),
-      estimatedPrice: profile.hotelNightly + travelerSurcharge + ((seed + index * 23) % 55),
+      estimatedPrice: estimateNightlyPrice({ nightlyBudget, seed, index, travelers, isPremium: budgetLevel === 'luxury' }),
       distance: `${(0.3 + ((seed + index * 11) % 16) / 10).toFixed(1)} mi from ${anchor}`,
       placeUrl: googleMapsSearchUrl(`${neighborhood} ${style} ${city}`),
       resultSource: 'demo'
@@ -163,18 +182,43 @@ function buildFallbackRestaurants({ destination, budgetLevel = 'moderate', trave
   });
 }
 
-export async function fetchHotels({ destination, pointsOfInterest = [], budgetLevel = 'moderate', travelers = 1 }) {
+function alignHotelPricesToNightlyBudget(hotels, nightlyBudget, budgetLevel, travelers) {
+  const minimumNightly = normalizeNightlyBudget(nightlyBudget, budgetLevel);
+
+  return hotels
+    .map((hotel, index) => ({
+      ...hotel,
+      estimatedPrice:
+        hotel.estimatedPrice >= minimumNightly
+          ? hotel.estimatedPrice
+          : estimateNightlyPrice({
+              nightlyBudget: minimumNightly,
+              seed: hashText(hotel.name || hotel.id || ''),
+              index,
+              travelers,
+              isPremium: budgetLevel === 'luxury'
+            })
+    }))
+    .filter((hotel) => hotel.estimatedPrice >= minimumNightly)
+    .slice(0, liveResultLimit);
+}
+
+export async function fetchHotels({ destination, pointsOfInterest = [], budgetLevel = 'moderate', travelers = 1, nightlyBudget }) {
   try {
     const hotels = await requestLiveRecommendations('/api/places/hotels', {
       destination,
       poi: pointsOfInterest[0],
       budgetLevel,
+      nightlyBudget,
       travelers
     });
+    const filteredHotels = alignHotelPricesToNightlyBudget(hotels, nightlyBudget, budgetLevel, travelers);
 
-    return hotels.length ? hotels : buildFallbackHotels({ destination, pointsOfInterest, budgetLevel, travelers });
+    return filteredHotels.length
+      ? filteredHotels
+      : buildFallbackHotels({ destination, pointsOfInterest, budgetLevel, travelers, nightlyBudget });
   } catch {
-    return buildFallbackHotels({ destination, pointsOfInterest, budgetLevel, travelers });
+    return buildFallbackHotels({ destination, pointsOfInterest, budgetLevel, travelers, nightlyBudget });
   }
 }
 

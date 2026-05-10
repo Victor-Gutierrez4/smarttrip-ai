@@ -11,6 +11,7 @@ const fieldMask = [
 const maxResults = 3;
 const cacheTtlMs = 15 * 60 * 1000;
 const hourlyLimit = 40;
+const hotelPriceWindow = 85;
 
 const cache = new Map();
 const rateBuckets = new Map();
@@ -85,7 +86,22 @@ function photoUrls(photos = []) {
   return photos.slice(0, 6).map((photo) => `/api/places/photo?name=${encodeURIComponent(photo.name)}&w=900`);
 }
 
-function mapPlace(place, category, index, budgetLevel) {
+function normalizeNightlyBudget(value, budgetLevel = 'moderate') {
+  const fallback = {
+    budget: 100,
+    moderate: 170,
+    luxury: 340
+  };
+  const budget = Number(value);
+
+  if (!Number.isFinite(budget) || budget <= 0) {
+    return fallback[budgetLevel] || fallback.moderate;
+  }
+
+  return Math.max(Math.round(budget), 100);
+}
+
+function mapPlace(place, category, index, budgetLevel, nightlyBudget) {
   const displayName = place.displayName?.text || (category === 'hotels' ? 'Recommended hotel' : 'Recommended restaurant');
   const rating = Number(place.rating || 4.2);
   const placeUrl = place.googleMapsUri || googleMapsSearchUrl(`${displayName} ${place.formattedAddress || ''}`);
@@ -95,7 +111,7 @@ function mapPlace(place, category, index, budgetLevel) {
       id: place.id || `google-hotel-${index}`,
       name: displayName,
       rating,
-      estimatedPrice: estimateHotelPrice(budgetLevel, index, displayName, rating),
+      estimatedPrice: estimateHotelPrice(budgetLevel, index, displayName, rating, nightlyBudget),
       distance: place.formattedAddress || 'Google Places result',
       placeUrl,
       photos: photoUrls(place.photos),
@@ -116,17 +132,13 @@ function mapPlace(place, category, index, budgetLevel) {
   };
 }
 
-function estimateHotelPrice(budgetLevel, index, placeName, rating) {
-  const fallback = {
-    budget: 95,
-    moderate: 170,
-    luxury: 340
-  };
+function estimateHotelPrice(budgetLevel, index, placeName, rating, nightlyBudget) {
   const nameAdjustment = hashText(placeName) % 45;
   const ratingAdjustment = Math.max(Math.round((rating - 4) * 30), 0);
-  const baseRate = fallback[budgetLevel] || fallback.moderate;
+  const baseRate = normalizeNightlyBudget(nightlyBudget, budgetLevel);
+  const priceOffset = (nameAdjustment + ratingAdjustment + index * 15) % hotelPriceWindow;
 
-  return baseRate + nameAdjustment + ratingAdjustment + index * 15;
+  return baseRate + priceOffset;
 }
 
 function formatCuisine(types = []) {
@@ -161,6 +173,7 @@ export async function handlePlacesRequest(request, response, category) {
   const destination = cleanText(request.query.destination);
   const pointOfInterest = cleanText(request.query.poi);
   const budgetLevel = cleanText(request.query.budgetLevel || 'moderate');
+  const nightlyBudget = normalizeNightlyBudget(request.query.nightlyBudget, budgetLevel);
 
   if (!destination) {
     return response.status(400).json({ error: 'Destination is required.' });
@@ -186,7 +199,7 @@ export async function handlePlacesRequest(request, response, category) {
       budgetLevel
     }
   });
-  const cacheKey = `${category}:${budgetLevel}:${textQuery.toLowerCase()}`;
+  const cacheKey = `${category}:${budgetLevel}:${nightlyBudget}:${textQuery.toLowerCase()}`;
   const cached = getCached(cacheKey);
   if (cached) {
     return response.status(200).json({ results: cached, source: 'cache' });
@@ -218,7 +231,7 @@ export async function handlePlacesRequest(request, response, category) {
     const data = await googleResponse.json();
     const results = (data.places || [])
       .slice(0, maxResults)
-      .map((place, index) => mapPlace(place, category, index, budgetLevel));
+      .map((place, index) => mapPlace(place, category, index, budgetLevel, nightlyBudget));
 
     setCached(cacheKey, results);
 

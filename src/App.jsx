@@ -94,6 +94,7 @@ function App() {
         ...currentForm,
         pointsOfInterest: nextTrip.pointsOfInterest,
         budgetLevel: nextTrip.budgetLevel,
+        nightlyBudget: currentForm.maxBudget,
         travelers: currentForm.travelers
       }),
       fetchRestaurants({

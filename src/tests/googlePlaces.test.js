@@ -24,6 +24,17 @@ describe('Google Places fallback recommendations', () => {
     expect(luxuryRestaurants[0].priceCategory).toBe('$$$$');
   });
 
+  it('keeps hotel recommendations at or above the selected nightly budget', async () => {
+    const hotels = await fetchHotels({
+      destination: 'New York, NY',
+      budgetLevel: 'moderate',
+      nightlyBudget: 150
+    });
+
+    expect(hotels.length).toBeGreaterThan(0);
+    expect(hotels.every((hotel) => hotel.estimatedPrice >= 150)).toBe(true);
+  });
+
   it('labels fallback recommendations clearly', async () => {
     const hotels = await fetchHotels({ destination: 'San Andres, Colombia', budgetLevel: 'moderate' });
     const restaurants = await fetchRestaurants({ destination: 'San Andres, Colombia', budgetLevel: 'moderate' });
