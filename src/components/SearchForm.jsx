@@ -1,4 +1,3 @@
-import BudgetSelector from './BudgetSelector';
 import { calculateTripDuration, getMinEndDate } from '../services/dateRange';
 
 const money = new Intl.NumberFormat('en-US', {
@@ -90,10 +89,6 @@ export default function SearchForm({ form, onChange, onSubmit }) {
             <span>{money.format(Math.round(Number(form.maxBudget) / duration))} per day</span>
             <span>$5,000</span>
           </div>
-        </div>
-        <div className="col-12">
-          <label className="form-label d-block">Travel Style</label>
-          <BudgetSelector value={form.budgetLevel} onChange={(value) => updateField('budgetLevel', value)} />
         </div>
         <div className="col-12">
           <button className="btn btn-primary w-100" type="submit">Generate Trip Plan</button>

@@ -4,7 +4,7 @@ import HotelCard from './components/HotelCard';
 import RestaurantCard from './components/RestaurantCard';
 import TripSummary from './components/TripSummary';
 import Itinerary from './components/Itinerary';
-import { calculateBudgetSummary } from './services/budgetCalculator';
+import { calculateBudgetSummary, getBudgetLevelFromTripBudget } from './services/budgetCalculator';
 import { calculateTripDuration, formatTripDates } from './services/dateRange';
 import { fetchHotels, fetchRestaurants, getRecommendationModeLabel } from './services/googlePlaces';
 import { generateItinerary } from './services/itineraryGenerator';
@@ -14,7 +14,6 @@ const defaultForm = {
   pointsText: 'Shibuya Crossing, Tokyo Tower, Akihabara',
   startDate: '2026-06-08',
   endDate: '2026-06-12',
-  budgetLevel: 'moderate',
   maxBudget: 1850
 };
 
@@ -34,16 +33,17 @@ export default function App() {
   function buildTrip(currentForm) {
     const pointsOfInterest = parsePoints(currentForm.pointsText);
     const duration = calculateTripDuration(currentForm.startDate, currentForm.endDate);
+    const budgetLevel = getBudgetLevelFromTripBudget(currentForm.maxBudget, duration);
 
     return {
       destination: currentForm.destination,
       pointsOfInterest,
       dateRange: formatTripDates(currentForm.startDate, currentForm.endDate),
       duration,
-      budgetLevel: currentForm.budgetLevel,
+      budgetLevel,
       maxBudget: Number(currentForm.maxBudget),
-      summary: calculateBudgetSummary({ ...currentForm, duration }),
-      itinerary: generateItinerary(pointsOfInterest, duration, currentForm.budgetLevel),
+      summary: calculateBudgetSummary({ ...currentForm, duration, budgetLevel }),
+      itinerary: generateItinerary(pointsOfInterest, duration, budgetLevel),
       hotels: [],
       restaurants: []
     };
@@ -54,8 +54,8 @@ export default function App() {
 
     const nextTrip = buildTrip(currentForm);
     const [hotels, restaurants] = await Promise.all([
-      fetchHotels({ ...currentForm, pointsOfInterest: nextTrip.pointsOfInterest }),
-      fetchRestaurants({ ...currentForm, pointsOfInterest: nextTrip.pointsOfInterest })
+      fetchHotels({ ...currentForm, pointsOfInterest: nextTrip.pointsOfInterest, budgetLevel: nextTrip.budgetLevel }),
+      fetchRestaurants({ ...currentForm, pointsOfInterest: nextTrip.pointsOfInterest, budgetLevel: nextTrip.budgetLevel })
     ]);
 
     setTrip({ ...nextTrip, hotels, restaurants });

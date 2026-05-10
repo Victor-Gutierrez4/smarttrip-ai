@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calculateBudgetSummary, calculateTripTotal } from '../services/budgetCalculator';
+import { calculateBudgetSummary, calculateTripTotal, getBudgetLevelFromTripBudget } from '../services/budgetCalculator';
 
 describe('Budget Calculator', () => {
   it('calculates total correctly', () => {
@@ -36,5 +36,11 @@ describe('Budget Calculator', () => {
     expect(result.budgetLimit).toBe(600);
     expect(result.dailyBudget).toBe(300);
     expect(result.budgetRemaining).toBe(24);
+  });
+
+  it('derives travel style from budget per day', () => {
+    expect(getBudgetLevelFromTripBudget(500, 5)).toBe('budget');
+    expect(getBudgetLevelFromTripBudget(1850, 5)).toBe('moderate');
+    expect(getBudgetLevelFromTripBudget(4000, 5)).toBe('luxury');
   });
 });
