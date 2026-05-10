@@ -416,6 +416,19 @@ p {
   z-index: 1;
 }
 
+.image-source {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 8px;
+  bottom: 12px;
+  color: var(--ink);
+  font-size: 0.76rem;
+  font-weight: 800;
+  left: 12px;
+  padding: 6px 8px;
+  position: absolute;
+  z-index: 1;
+}
+
 .itinerary-content {
   align-content: center;
   display: grid;

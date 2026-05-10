@@ -53,25 +53,42 @@ export function generateItinerary(
   pointsOfInterest,
   duration = pointsOfInterest.length,
   budgetLevel = 'moderate',
-  destination = ''
+  destination = '',
+  attractionPhotos = []
 ) {
   const cleanPoints = pointsOfInterest.map((point) => point.trim()).filter(Boolean);
   const days = Math.max(Number(duration) || cleanPoints.length || 1, 1);
   const meals = mealIdeas[budgetLevel] || mealIdeas.moderate;
   const nearby = nearbyIdeas[budgetLevel] || nearbyIdeas.moderate;
   const images = imageCollections[getDestinationKey(destination)];
+  const usedImages = new Set();
+
+  function getImageForDay(primary, index) {
+    const matchingPlace = attractionPhotos.find((place) => place.query === primary || place.name === primary);
+    const googlePhoto = matchingPlace?.photos?.find((photo) => !usedImages.has(photo));
+    const fallbackImage = images.find((image) => !usedImages.has(image)) || images[index % images.length];
+    const imageUrl = googlePhoto || fallbackImage;
+
+    usedImages.add(imageUrl);
+    return {
+      imageUrl,
+      imageSource: googlePhoto ? 'Google Places photo' : 'Curated fallback photo'
+    };
+  }
 
   return Array.from({ length: days }, (_, index) => {
     const primary = cleanPoints[index % cleanPoints.length] || 'Explore the city center';
     const secondary = cleanPoints[(index + 1) % cleanPoints.length] || 'Visit a nearby landmark';
     const nearbyPlace = nearby[index % nearby.length];
+    const image = getImageForDay(primary, index);
 
     return {
       day: index + 1,
       title: `Day ${index + 1}`,
       primaryPlace: primary,
       nearbyPlace,
-      imageUrl: images[index % images.length],
+      imageUrl: image.imageUrl,
+      imageSource: image.imageSource,
       imageAlt: `${primary} travel preview`,
       activities: [
         `Morning visit to ${primary}`,

@@ -23,4 +23,21 @@ describe('Itinerary Generator', () => {
     expect(result[0].imageUrl).toContain('images.unsplash.com');
     expect(result[0].imageAlt).toContain('Tokyo Tower');
   });
+
+  it('uses non-repeating provided attraction photos first', () => {
+    const result = generateItinerary(
+      ['San Andres Beach', 'Johnny Cay'],
+      2,
+      'moderate',
+      'Colombia',
+      [
+        { query: 'San Andres Beach', photos: ['/api/places/photo?name=photo-one'] },
+        { query: 'Johnny Cay', photos: ['/api/places/photo?name=photo-two'] }
+      ]
+    );
+
+    expect(result[0].imageUrl).toBe('/api/places/photo?name=photo-one');
+    expect(result[1].imageUrl).toBe('/api/places/photo?name=photo-two');
+    expect(result[0].imageUrl).not.toBe(result[1].imageUrl);
+  });
 });

@@ -20,6 +20,7 @@ export default function Itinerary({ days, summary }) {
           <div className="itinerary-image-wrap">
             <img alt={day.imageAlt} className="itinerary-image" src={day.imageUrl} />
             <div className="day-badge">Day {day.day}</div>
+            <span className="image-source">{day.imageSource}</span>
           </div>
           <div className="itinerary-content">
             <div>

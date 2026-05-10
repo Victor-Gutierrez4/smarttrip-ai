@@ -4,6 +4,7 @@ import HotelCard from './components/HotelCard';
 import RestaurantCard from './components/RestaurantCard';
 import TripSummary from './components/TripSummary';
 import Itinerary from './components/Itinerary';
+import { fetchAttractionPhotos } from './services/attractionPhotos';
 import { calculateBudgetSummary, getBudgetLevelFromTripBudget } from './services/budgetCalculator';
 import { calculateTripDuration, formatTripDates } from './services/dateRange';
 import { fetchHotels, fetchRestaurants, getRecommendationSourceLabel } from './services/googlePlaces';
@@ -53,12 +54,20 @@ export default function App() {
     setLoading(true);
 
     const nextTrip = buildTrip(currentForm);
-    const [hotels, restaurants] = await Promise.all([
+    const [hotels, restaurants, attractionPhotos] = await Promise.all([
       fetchHotels({ ...currentForm, pointsOfInterest: nextTrip.pointsOfInterest, budgetLevel: nextTrip.budgetLevel }),
-      fetchRestaurants({ ...currentForm, pointsOfInterest: nextTrip.pointsOfInterest, budgetLevel: nextTrip.budgetLevel })
+      fetchRestaurants({ ...currentForm, pointsOfInterest: nextTrip.pointsOfInterest, budgetLevel: nextTrip.budgetLevel }),
+      fetchAttractionPhotos({ destination: currentForm.destination, pointsOfInterest: nextTrip.pointsOfInterest })
     ]);
+    const itinerary = generateItinerary(
+      nextTrip.pointsOfInterest,
+      nextTrip.duration,
+      nextTrip.budgetLevel,
+      currentForm.destination,
+      attractionPhotos
+    );
 
-    setTrip({ ...nextTrip, hotels, restaurants });
+    setTrip({ ...nextTrip, hotels, restaurants, itinerary });
     setSelectedHotelId(hotels[0]?.id || '');
     setLoading(false);
   }
