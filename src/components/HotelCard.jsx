@@ -1,3 +1,8 @@
+function mapEmbedUrl(place) {
+  const query = encodeURIComponent(`${place.name || ''} ${place.distance || ''}`.trim());
+  return `https://www.google.com/maps?q=${query}&output=embed`;
+}
+
 export default function HotelCard({ hotel, isSelected, onSelect, onViewMap }) {
   return (
     <div className={`result-card interactive-result ${isSelected ? 'selected-result' : ''}`}>
@@ -24,6 +29,14 @@ export default function HotelCard({ hotel, isSelected, onSelect, onViewMap }) {
         </div>
       </button>
       <div className="place-preview" role="tooltip">
+        <div className="mini-map-frame">
+          <iframe
+            title={`${hotel.name} map preview`}
+            src={mapEmbedUrl(hotel)}
+            loading="lazy"
+            referrerPolicy="no-referrer"
+          />
+        </div>
         <strong>{hotel.name}</strong>
         <span>{hotel.rating.toFixed(1)} rating</span>
         <span>${hotel.estimatedPrice}/night estimate | {hotel.distance}</span>

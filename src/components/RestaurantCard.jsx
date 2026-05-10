@@ -1,3 +1,8 @@
+function mapEmbedUrl(place) {
+  const query = encodeURIComponent(`${place.name || ''} ${place.address || place.cuisine || ''}`.trim());
+  return `https://www.google.com/maps?q=${query}&output=embed`;
+}
+
 export default function RestaurantCard({ restaurant, onViewMap }) {
   return (
     <div className="result-card interactive-result">
@@ -22,6 +27,14 @@ export default function RestaurantCard({ restaurant, onViewMap }) {
         </div>
       </button>
       <div className="place-preview" role="tooltip">
+        <div className="mini-map-frame">
+          <iframe
+            title={`${restaurant.name} map preview`}
+            src={mapEmbedUrl(restaurant)}
+            loading="lazy"
+            referrerPolicy="no-referrer"
+          />
+        </div>
         <strong>{restaurant.name}</strong>
         <span>{restaurant.rating.toFixed(1)} rating | {restaurant.priceCategory}</span>
         <span>{restaurant.address || restaurant.cuisine}</span>

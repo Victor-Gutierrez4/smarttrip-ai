@@ -209,48 +209,6 @@ p {
   margin-bottom: 4px;
 }
 
-.budget-status {
-  border-radius: 8px;
-  display: grid;
-  gap: 2px;
-  margin-top: 16px;
-  padding: 11px 12px;
-}
-
-.budget-status strong {
-  font-size: 0.95rem;
-}
-
-.budget-status span {
-  font-size: 0.9rem;
-}
-
-.within-budget {
-  background: #e8f3ef;
-  color: var(--green);
-}
-
-.over-budget {
-  background: #fff1e8;
-  color: #a14f17;
-}
-
-.budget-guidance {
-  background: #fff8e7;
-  border: 1px solid #f2d492;
-  border-radius: 8px;
-  color: #7a4b00;
-  display: grid;
-  gap: 3px;
-  margin-top: 10px;
-  padding: 11px 12px;
-}
-
-.budget-guidance span {
-  color: #7a4b00;
-  font-size: 0.9rem;
-}
-
 .summary-panel ul {
   display: grid;
   gap: 12px;
@@ -301,11 +259,11 @@ p {
   box-shadow: 0 18px 45px rgba(20, 31, 52, 0.18);
   color: var(--ink);
   display: grid;
-  gap: 4px;
+  gap: 6px;
   left: 18px;
-  min-width: min(300px, calc(100vw - 48px));
+  min-width: min(340px, calc(100vw - 48px));
   opacity: 0;
-  padding: 12px 14px;
+  padding: 12px;
   pointer-events: auto;
   position: absolute;
   top: calc(100% + 8px);
@@ -314,6 +272,21 @@ p {
   visibility: hidden;
   width: max-content;
   z-index: 10;
+}
+
+.mini-map-frame {
+  background: #eef3fb;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  height: 150px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.mini-map-frame iframe {
+  border: 0;
+  height: 100%;
+  width: 100%;
 }
 
 .interactive-result .place-preview:hover {

@@ -5,8 +5,6 @@ const money = new Intl.NumberFormat('en-US', {
 });
 
 export default function TripSummary({ summary, selectedHotel }) {
-  const isOverBudget = summary.budgetRemaining < 0;
-  const isTightBudget = summary.dailyBudget < 180;
   const rows = [
     ['Hotel total', summary.hotelTotal],
     ['Food', summary.foodTotal],
@@ -28,22 +26,6 @@ export default function TripSummary({ summary, selectedHotel }) {
           <span>{summary.roundTrip ? 'Round trip included' : 'One-way travel only'}</span>
           <span>From {summary.startLocation || 'your starting location'} to {summary.destination}</span>
         </div>
-        <div className={`budget-status ${isOverBudget ? 'over-budget' : 'within-budget'}`}>
-          <strong>{isOverBudget ? 'Over selected budget' : 'Within selected budget'}</strong>
-          <span>
-            {money.format(Math.abs(summary.budgetRemaining))}
-            {isOverBudget ? ' over' : ' remaining'} from {money.format(summary.budgetLimit)} total selected budget
-          </span>
-        </div>
-        {(isOverBudget || isTightBudget) && (
-          <div className="budget-guidance">
-            <strong>Budget guidance</strong>
-            <span>
-              This budget is tight for the selected dates. Choose fewer days, raise the trip budget, or look for lower-rated
-              areas farther from the main attractions.
-            </span>
-          </div>
-        )}
       </div>
       <ul>
         <li>
