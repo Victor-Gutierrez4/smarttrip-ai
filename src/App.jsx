@@ -5,13 +5,15 @@ import RestaurantCard from './components/RestaurantCard';
 import TripSummary from './components/TripSummary';
 import Itinerary from './components/Itinerary';
 import { calculateBudgetSummary } from './services/budgetCalculator';
+import { calculateTripDuration, formatTripDates } from './services/dateRange';
 import { fetchHotels, fetchRestaurants, hasGooglePlacesKey } from './services/googlePlaces';
 import { generateItinerary } from './services/itineraryGenerator';
 
 const defaultForm = {
   destination: 'Tokyo, Japan',
   pointsText: 'Shibuya Crossing, Tokyo Tower, Akihabara',
-  duration: 5,
+  startDate: '2026-06-08',
+  endDate: '2026-06-12',
   budgetLevel: 'moderate'
 };
 
@@ -29,11 +31,15 @@ export default function App() {
 
   function buildTrip(currentForm) {
     const pointsOfInterest = parsePoints(currentForm.pointsText);
+    const duration = calculateTripDuration(currentForm.startDate, currentForm.endDate);
+
     return {
       destination: currentForm.destination,
       pointsOfInterest,
-      summary: calculateBudgetSummary(currentForm),
-      itinerary: generateItinerary(pointsOfInterest, currentForm.duration, currentForm.budgetLevel),
+      dateRange: formatTripDates(currentForm.startDate, currentForm.endDate),
+      duration,
+      summary: calculateBudgetSummary({ ...currentForm, duration }),
+      itinerary: generateItinerary(pointsOfInterest, duration, currentForm.budgetLevel),
       hotels: [],
       restaurants: []
     };
@@ -89,7 +95,7 @@ export default function App() {
             <p className="eyebrow">{apiStatus}</p>
             <h2>{trip.destination}</h2>
           </div>
-          <span>{trip.pointsOfInterest.length} points of interest</span>
+          <span>{trip.dateRange} · {trip.duration} day trip · {trip.pointsOfInterest.length} points of interest</span>
         </div>
 
         <TripSummary summary={trip.summary} />

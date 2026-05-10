@@ -121,6 +121,16 @@ p {
   color: var(--blue);
 }
 
+.duration-chip {
+  background: #e8f3ef;
+  border: 1px solid #c7e4db;
+  border-radius: 8px;
+  color: var(--green);
+  font-weight: 800;
+  padding: 10px 12px;
+  text-align: center;
+}
+
 .results-section {
   padding: 36px 0 56px;
 }

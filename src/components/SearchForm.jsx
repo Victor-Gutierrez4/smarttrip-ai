@@ -1,12 +1,22 @@
 import BudgetSelector from './BudgetSelector';
+import { calculateTripDuration, getMinEndDate } from '../services/dateRange';
 
 export default function SearchForm({ form, onChange, onSubmit }) {
-  const updateField = (field, value) => onChange({ ...form, [field]: value });
+  const duration = calculateTripDuration(form.startDate, form.endDate);
+  const updateField = (field, value) => {
+    const nextForm = { ...form, [field]: value };
+
+    if (field === 'startDate' && nextForm.endDate < value) {
+      nextForm.endDate = value;
+    }
+
+    onChange(nextForm);
+  };
 
   return (
     <form className="planner-panel" onSubmit={onSubmit}>
       <div className="row g-3">
-        <div className="col-md-7">
+        <div className="col-12">
           <label className="form-label" htmlFor="destination">Destination</label>
           <input
             className="form-control"
@@ -17,16 +27,31 @@ export default function SearchForm({ form, onChange, onSubmit }) {
             required
           />
         </div>
-        <div className="col-md-5">
-          <label className="form-label" htmlFor="duration">Duration</label>
+        <div className="col-md-6">
+          <label className="form-label" htmlFor="startDate">Start Date</label>
           <input
             className="form-control"
-            id="duration"
-            min="1"
-            type="number"
-            value={form.duration}
-            onChange={(event) => updateField('duration', event.target.value)}
+            id="startDate"
+            type="date"
+            value={form.startDate}
+            onChange={(event) => updateField('startDate', event.target.value)}
+            required
           />
+        </div>
+        <div className="col-md-6">
+          <label className="form-label" htmlFor="endDate">End Date</label>
+          <input
+            className="form-control"
+            id="endDate"
+            min={getMinEndDate(form.startDate)}
+            type="date"
+            value={form.endDate}
+            onChange={(event) => updateField('endDate', event.target.value)}
+            required
+          />
+        </div>
+        <div className="col-12">
+          <div className="duration-chip">{duration} day trip</div>
         </div>
         <div className="col-12">
           <label className="form-label" htmlFor="points">Points of Interest</label>
