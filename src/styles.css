@@ -309,6 +309,12 @@ p {
   z-index: 10;
 }
 
+.interactive-result .place-preview:hover {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
 .place-preview button {
   background: var(--blue);
   border: 0;
@@ -350,7 +356,9 @@ p {
 }
 
 .interactive-result:hover .place-preview,
-.interactive-result:focus-visible .place-preview {
+.interactive-result:focus-visible .place-preview,
+.interactive-result .place-preview:hover,
+.interactive-result:focus-within .place-preview {
   opacity: 1;
   transform: translateY(0);
   visibility: visible;

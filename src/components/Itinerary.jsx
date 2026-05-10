@@ -25,7 +25,7 @@ export default function Itinerary({ days, summary, onSelectPlace }) {
         >
           <div
             className="itinerary-image-wrap"
-            style={day.imageUrl ? { backgroundImage: `url(${day.imageUrl})` } : undefined}
+            style={day.imageUrl ? { backgroundImage: `url('${day.imageUrl}')` } : undefined}
           >
             {!day.imageUrl && (
               <div className="itinerary-image-missing">
