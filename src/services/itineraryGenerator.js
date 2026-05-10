@@ -20,6 +20,11 @@ function googleMapsSearchUrl(query, destination) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${query} ${destination}`.trim())}`;
 }
 
+function fallbackPlaceImageUrl(placeName = '', destination = '') {
+  const query = encodeURIComponent(`${placeName} ${destination}`.trim() || 'travel destination');
+  return `https://source.unsplash.com/featured/900x600/?${query}`;
+}
+
 export function generateItinerary(
   pointsOfInterest,
   duration = pointsOfInterest.length,
@@ -60,11 +65,14 @@ export function generateItinerary(
       `${destination || 'Destination'} exploration area`;
 
     usedPlaces.add(fallbackName);
+    const imageUrl = fallbackPlaceImageUrl(fallbackName, destination);
+    usedImages.add(imageUrl);
+
     return {
       name: fallbackName,
       address: destination,
-      imageUrl: '',
-      imageSource: 'Open exact place',
+      imageUrl,
+      imageSource: 'Suggested travel photo',
       placeUrl: googleMapsSearchUrl(fallbackName, destination)
     };
   }
@@ -80,7 +88,11 @@ export function generateItinerary(
       return getFallbackPlace(index);
     }
 
-    const imageUrl = place.photos.find((photo) => !usedImages.has(photo)) || '';
+    const imageUrl =
+      (place.photos || []).find((photo) => {
+        const url = typeof photo === 'string' ? photo : photo?.url;
+        return url && !usedImages.has(url);
+      }) || fallbackPlaceImageUrl(place.name || place.query, destination);
     if (imageUrl) {
       usedImages.add(imageUrl);
     }
