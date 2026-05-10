@@ -67,7 +67,25 @@ function App() {
     setLoading(true);
 
     const nextTrip = buildTrip(currentForm);
-    const [hotels, restaurants, attractionPhotos] = await Promise.all([
+    const itineraryPlaces = await fetchAttractionPhotos({
+      destination: currentForm.destination,
+      pointsOfInterest: nextTrip.pointsOfInterest,
+      duration: nextTrip.duration
+    });
+    
+    const nearbyPlaces = await fetchAttractionPhotos({
+      destination: currentForm.destination,
+      pointsOfInterest: [
+        'museum',
+        'market',
+        'park',
+        'shopping street',
+        'restaurant'
+      ],
+      duration: nextTrip.duration
+    });
+
+    const [hotels, restaurants] = await Promise.all([
       fetchHotels({
         ...currentForm,
         pointsOfInterest: nextTrip.pointsOfInterest,
@@ -79,15 +97,15 @@ function App() {
         pointsOfInterest: nextTrip.pointsOfInterest,
         budgetLevel: nextTrip.budgetLevel,
         travelers: currentForm.travelers
-      }),
-      fetchAttractionPhotos({
-        destination: currentForm.destination,
-        pointsOfInterest: nextTrip.pointsOfInterest,
-        duration: nextTrip.duration
       })
     ]);
 
-    setTrip({ ...nextTrip, hotels, restaurants, itineraryPlaces: attractionPhotos });
+    setTrip({
+      ...nextTrip,
+      hotels,
+      restaurants,
+      itineraryPlaces: [...itineraryPlaces, ...nearbyPlaces]
+    });
     setSelectedHotelId(hotels[0]?.id || '');
     setLoading(false);
   }

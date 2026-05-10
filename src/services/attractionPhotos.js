@@ -1,4 +1,23 @@
-const maxPhotoLookups = 6;
+const maxPhotoLookups = 10;
+
+async function fetchPlacePhotos(placeName, destination) {
+  if (!placeName || !destination) return [];
+  
+  try {
+    const response = await fetch(`/api/places/attractions?destination=${encodeURIComponent(destination)}&points=${encodeURIComponent(placeName)}&duration=1&generatedAt=${Date.now()}`, {
+      cache: 'no-store'
+    });
+    if (!response.ok) return [];
+    
+    const data = await response.json();
+    if (data.results && data.results.length > 0) {
+      return data.results[0].photos || [];
+    }
+    return [];
+  } catch {
+    return [];
+  }
+}
 
 export async function fetchAttractionPhotos({ destination, pointsOfInterest = [], duration = 1 }) {
   if (typeof window === 'undefined') {
@@ -12,7 +31,7 @@ export async function fetchAttractionPhotos({ destination, pointsOfInterest = []
 
   const searchParams = new URLSearchParams({
     destination,
-    duration: String(duration),
+    duration: String(duration * 2),
     points: uniquePoints.join('|'),
     generatedAt: String(Date.now())
   });
@@ -31,3 +50,5 @@ export async function fetchAttractionPhotos({ destination, pointsOfInterest = []
     return [];
   }
 }
+
+export { fetchPlacePhotos };

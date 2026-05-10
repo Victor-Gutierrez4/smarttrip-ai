@@ -52,6 +52,15 @@ export function generateItinerary(
         }
       : null;
   const placeCandidates = [...itineraryPlaces, hotelPlace].filter(Boolean);
+  
+  const placePhotosMap = new Map();
+  placeCandidates.forEach((place) => {
+    const key = (place.name || place.query || '').toLowerCase().trim();
+    if (key && place.photos?.length > 0) {
+      placePhotosMap.set(key, place.photos);
+    }
+  });
+
   const plannedPlaceNames = [...cleanPoints, ...placeCandidates.map((place) => place.name || place.query), ...extraPlaces]
     .map((place) => place?.trim())
     .filter(Boolean);
@@ -138,13 +147,22 @@ export function generateItinerary(
     if (place.imageUrl) {
       imageUrl = place.imageUrl;
       imageSource = place.imageSource;
-    } else if (allGooglePhotos.length > 0) {
-      const photoIndex = index % allGooglePhotos.length;
-      const googlePhoto = allGooglePhotos[photoIndex];
-      imageUrl = googlePhoto.url;
-      imageSource = googlePhoto.source === 'selected-hotel' 
-        ? 'Hotel photo'
-        : 'Google Places photo';
+    } else {
+      const primaryLower = primary.toLowerCase().trim();
+      const matchedPhotos = placePhotosMap.get(primaryLower);
+      
+      if (matchedPhotos && matchedPhotos.length > 0) {
+        const photoIndex = index % matchedPhotos.length;
+        imageUrl = matchedPhotos[photoIndex];
+        imageSource = 'Google Places photo';
+      } else if (allGooglePhotos.length > 0) {
+        const photoIndex = index % allGooglePhotos.length;
+        const googlePhoto = allGooglePhotos[photoIndex];
+        imageUrl = googlePhoto.url;
+        imageSource = googlePhoto.source === 'selected-hotel' 
+          ? 'Hotel photo'
+          : 'Google Places photo';
+      }
     }
 
     return {
