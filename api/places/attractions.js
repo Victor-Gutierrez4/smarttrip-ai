@@ -49,7 +49,10 @@ async function searchPlaces({ apiKey, textQuery, maxResultCount }) {
   });
 
   if (!googleResponse.ok) {
-    return [];
+    const errorBody = await googleResponse.json().catch(() => ({}));
+    const error = new Error(errorBody.error?.message || 'Google Places request failed.');
+    error.status = googleResponse.status;
+    throw error;
   }
 
   const data = await googleResponse.json();
@@ -125,7 +128,10 @@ export default async function handler(request, response) {
       results: uniqueResults.slice(0, duration),
       source: 'google-places'
     });
-  } catch {
-    return response.status(502).json({ error: 'Google attraction photo lookup failed.' });
+  } catch (error) {
+    return response.status(error.status || 502).json({
+      error: 'Google attraction photo lookup failed.',
+      details: error.message || 'No Google error message returned.'
+    });
   }
 }

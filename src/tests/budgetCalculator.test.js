@@ -38,6 +38,29 @@ describe('Budget Calculator', () => {
     expect(result.budgetRemaining).toBe(24);
   });
 
+  it('uses the starting location and round trip setting for travel cost', () => {
+    const roundTrip = calculateBudgetSummary({
+      budgetLevel: 'moderate',
+      duration: 4,
+      startLocation: 'Los Angeles, CA',
+      destination: 'Tokyo, Japan',
+      travelers: 2,
+      roundTrip: true
+    });
+    const oneWay = calculateBudgetSummary({
+      budgetLevel: 'moderate',
+      duration: 4,
+      startLocation: 'Los Angeles, CA',
+      destination: 'Tokyo, Japan',
+      travelers: 2,
+      roundTrip: false
+    });
+
+    expect(roundTrip.flightTotal).toBe(oneWay.flightTotal * 2);
+    expect(roundTrip.startLocation).toBe('Los Angeles, CA');
+    expect(roundTrip.roundTrip).toBe(true);
+  });
+
   it('derives travel style from budget per day', () => {
     expect(getBudgetLevelFromTripBudget(500, 5)).toBe('budget');
     expect(getBudgetLevelFromTripBudget(1850, 5)).toBe('moderate');

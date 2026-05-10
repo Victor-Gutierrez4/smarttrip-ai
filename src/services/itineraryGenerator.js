@@ -20,12 +20,6 @@ function googleMapsSearchUrl(query, destination) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${query} ${destination}`.trim())}`;
 }
 
-function fallbackPlaceImageUrl(placeName = '', destination = '') {
-  const seed = [...(placeName + destination)].reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  const id = Math.abs(seed % 100) + 1;
-  return `https://picsum.photos/900/600?random=${id}`;
-}
-
 export function generateItinerary(
   pointsOfInterest,
   duration = pointsOfInterest.length,
@@ -85,14 +79,12 @@ export function generateItinerary(
       `${destination || 'Destination'} exploration area`;
 
     usedPlaces.add(fallbackName);
-    const imageUrl = fallbackPlaceImageUrl(fallbackName, destination);
-    usedImages.add(imageUrl);
 
     return {
       name: fallbackName,
       address: destination,
-      imageUrl,
-      imageSource: 'Suggested travel photo',
+      imageUrl: '',
+      imageSource: 'Open in Google Maps',
       placeUrl: googleMapsSearchUrl(fallbackName, destination)
     };
   }
@@ -112,7 +104,7 @@ export function generateItinerary(
       (place.photos || []).find((photo) => {
         const url = typeof photo === 'string' ? photo : photo?.url;
         return url && !usedImages.has(url);
-      }) || fallbackPlaceImageUrl(place.name || place.query, destination);
+      }) || '';
     if (imageUrl) {
       usedImages.add(imageUrl);
     }

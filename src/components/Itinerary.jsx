@@ -16,10 +16,6 @@ export default function Itinerary({ days, summary, onSelectPlace }) {
   return (
     <section className="itinerary-list">
       {days.map((day) => {
-        const bgStyle = day.imageUrl 
-          ? { backgroundImage: `linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.15)), url('${day.imageUrl}')` }
-          : {};
-        
         return (
           <article
             className="itinerary-day"
@@ -28,11 +24,10 @@ export default function Itinerary({ days, summary, onSelectPlace }) {
             onClick={() => onSelectPlace?.(day)}
             onMouseEnter={() => onSelectPlace?.(day)}
           >
-            <div
-              className="itinerary-image-wrap"
-              style={bgStyle}
-            >
-              {!day.imageUrl && (
+            <div className="itinerary-image-wrap">
+              {day.imageUrl ? (
+                <img className="itinerary-image" src={day.imageUrl} alt={day.imageAlt} loading="lazy" />
+              ) : (
                 <div className="itinerary-image-missing">
                   <strong>{day.primaryPlace}</strong>
                   <span>Preview this place on Google Maps</span>

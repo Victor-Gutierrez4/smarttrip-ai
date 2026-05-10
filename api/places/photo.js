@@ -17,19 +17,23 @@ export default async function handler(request, response) {
 
   try {
     const googleResponse = await fetch(
-      `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=${width}&skipHttpRedirect=true&key=${apiKey}`
+      `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=${width}&key=${apiKey}`
     );
 
     if (!googleResponse.ok) {
-      return response.status(googleResponse.status).json({ error: 'Google photo request failed.' });
+      const details = await googleResponse.text().catch(() => '');
+      return response.status(googleResponse.status).json({
+        error: 'Google photo request failed.',
+        details: details.slice(0, 300)
+      });
     }
 
-    const data = await googleResponse.json();
-    if (!data.photoUri) {
-      return response.status(404).json({ error: 'Photo not found.' });
-    }
+    const contentType = googleResponse.headers.get('content-type') || 'image/jpeg';
+    const imageBuffer = Buffer.from(await googleResponse.arrayBuffer());
 
-    return response.redirect(302, data.photoUri);
+    response.setHeader('Content-Type', contentType);
+    response.setHeader('Content-Length', imageBuffer.length);
+    return response.status(200).send(imageBuffer);
   } catch {
     return response.status(502).json({ error: 'Google photo request failed.' });
   }

@@ -3,19 +3,19 @@ const budgetProfiles = {
     hotelNightly: 95,
     restaurantDaily: 45,
     transportDaily: 18,
-    flightEstimate: 150
+    flightEstimate: 250
   },
   moderate: {
     hotelNightly: 170,
     restaurantDaily: 85,
     transportDaily: 35,
-    flightEstimate: 400
+    flightEstimate: 500
   },
   luxury: {
     hotelNightly: 340,
     restaurantDaily: 165,
     transportDaily: 80,
-    flightEstimate: 900
+    flightEstimate: 1200
   }
 };
 
@@ -26,13 +26,15 @@ function normalizeLocation(value = '') {
     .trim();
 }
 
-function estimateTravelCost(startLocation, destination, roundTrip = true, travelers = 1) {
+function estimateTravelCost(startLocation, destination, roundTrip = true, travelers = 1, fallbackEstimate = 400) {
   const origin = normalizeLocation(startLocation);
   const target = normalizeLocation(destination);
   const sameCity = origin && target && (origin.includes(target.split(',')[0]) || target.includes(origin.split(',')[0]));
 
   let baseCost;
-  if (!origin || !target || origin === target) {
+  if (!origin || !target) {
+    return Math.round(fallbackEstimate * Math.max(Number(travelers) || 1, 1));
+  } else if (origin === target) {
     baseCost = 40;
   } else if (sameCity) {
     baseCost = 60;
@@ -85,7 +87,7 @@ export function calculateBudgetSummary({ budgetLevel, duration, hotelNightly, ma
   const hotelTotal = nightlyHotelRate * days;
   const foodTotal = profile.restaurantDaily * days * people;
   const transportationTotal = profile.transportDaily * days * people;
-  const flightTotal = estimateTravelCost(startLocation, destination, roundTrip, people);
+  const flightTotal = estimateTravelCost(startLocation, destination, roundTrip, people, profile.flightEstimate);
   const groundTotal = hotelTotal + foodTotal + transportationTotal;
   const estimatedTotal = calculateTripTotal(hotelTotal, foodTotal, transportationTotal, flightTotal);
 

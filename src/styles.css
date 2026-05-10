@@ -421,17 +421,18 @@ p {
 }
 
 .itinerary-image-wrap {
-  background: linear-gradient(135deg, #2457d6 0%, #1f8a70 100%);
   background-color: #eef3fb;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
   min-height: 190px;
   position: relative;
 }
 
 .itinerary-image {
-  display: none;
+  display: block;
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  position: absolute;
+  width: 100%;
 }
 
 .itinerary-image-missing {

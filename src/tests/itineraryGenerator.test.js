@@ -93,4 +93,10 @@ describe('Itinerary Generator', () => {
     expect(result[0].placeUrl).toContain('google.com/maps/search');
     expect(result[0].placeUrl).toContain('San%20Andres%20Beach');
   });
+
+  it('does not use placeholder photos when Google photos are unavailable', () => {
+    const result = generateItinerary(['Rocky Cay'], 2, 'moderate', 'San Andres, Colombia');
+
+    expect(result.every((day) => !day.imageUrl.includes('picsum.photos'))).toBe(true);
+  });
 });
