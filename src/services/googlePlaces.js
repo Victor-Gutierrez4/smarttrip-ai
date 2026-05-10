@@ -63,6 +63,10 @@ function cityName(destination = 'City') {
   return destination.split(',')[0].trim() || 'City';
 }
 
+function googleMapsSearchUrl(query) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
 async function requestLiveRecommendations(path, params) {
   if (typeof window === 'undefined') {
     throw new Error('Live recommendations are only available in the browser.');
@@ -99,7 +103,8 @@ function buildFallbackHotels({ destination, pointsOfInterest = [], budgetLevel =
       name: `${neighborhood} ${style}`,
       rating: Number(scoreFromText(destination + style + neighborhood, index).toFixed(1)),
       estimatedPrice: profile.hotelNightly + ((seed + index * 23) % 55),
-      distance: `${(0.3 + ((seed + index * 11) % 16) / 10).toFixed(1)} mi from ${anchor}`
+      distance: `${(0.3 + ((seed + index * 11) % 16) / 10).toFixed(1)} mi from ${anchor}`,
+      placeUrl: googleMapsSearchUrl(`${neighborhood} ${style} ${city}`)
     };
   });
 }
@@ -123,7 +128,9 @@ function buildFallbackRestaurants({ destination, budgetLevel = 'moderate' }) {
       name: `${city} ${cuisine} ${style}`,
       rating: Number(scoreFromText(destination + cuisine + style, index).toFixed(1)),
       priceCategory: priceByBudget[budgetLevel] || '$$',
-      cuisine: `${cuisine} near ${neighborhood}`
+      cuisine: `${cuisine} near ${neighborhood}`,
+      address: `${neighborhood}, ${city}`,
+      placeUrl: googleMapsSearchUrl(`${city} ${cuisine} ${style}`)
     };
   });
 }

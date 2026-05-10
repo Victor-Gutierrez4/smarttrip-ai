@@ -5,6 +5,7 @@ const fieldMask = [
   'places.formattedAddress',
   'places.rating',
   'places.priceLevel',
+  'places.googleMapsUri',
   'places.types'
 ].join(',');
 const maxResults = 3;
@@ -83,7 +84,8 @@ function mapPlace(place, category, index, budgetLevel) {
       name: displayName,
       rating,
       estimatedPrice: estimateHotelPrice(place.priceLevel, budgetLevel, index),
-      distance: place.formattedAddress || 'Google Places result'
+      distance: place.formattedAddress || 'Google Places result',
+      placeUrl: place.googleMapsUri
     };
   }
 
@@ -92,7 +94,9 @@ function mapPlace(place, category, index, budgetLevel) {
     name: displayName,
     rating,
     priceCategory: mapPriceLevel(place.priceLevel),
-    cuisine: formatCuisine(place.types)
+    cuisine: formatCuisine(place.types),
+    address: place.formattedAddress,
+    placeUrl: place.googleMapsUri
   };
 }
 
