@@ -14,4 +14,13 @@ describe('Itinerary Generator', () => {
     expect(result).toHaveLength(3);
     expect(result[0].activities[0]).toContain('Akihabara');
   });
+
+  it('adds visual and nearby-place context to each day', () => {
+    const result = generateItinerary(['Tokyo Tower'], 1, 'moderate', 'Tokyo, Japan');
+
+    expect(result[0].primaryPlace).toBe('Tokyo Tower');
+    expect(result[0].nearbyPlace).toBeTruthy();
+    expect(result[0].imageUrl).toContain('images.unsplash.com');
+    expect(result[0].imageAlt).toContain('Tokyo Tower');
+  });
 });

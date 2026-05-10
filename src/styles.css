@@ -366,25 +366,72 @@ p {
 
 .itinerary-list {
   display: grid;
-  gap: 14px;
+  gap: 18px;
 }
 
 .itinerary-day {
-  border-top: 1px solid var(--line);
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 10px 26px rgba(20, 31, 52, 0.08);
   display: grid;
-  gap: 16px;
-  grid-template-columns: 90px 1fr;
-  padding-top: 16px;
+  gap: 18px;
+  grid-template-columns: minmax(180px, 240px) 1fr;
+  min-height: 190px;
+  outline-offset: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.itinerary-image-wrap {
+  min-height: 190px;
+  position: relative;
+}
+
+.itinerary-image {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  position: absolute;
+  width: 100%;
+}
+
+.itinerary-image-wrap::after {
+  background: linear-gradient(180deg, rgba(13, 25, 44, 0.05), rgba(13, 25, 44, 0.48));
+  content: "";
+  inset: 0;
+  position: absolute;
 }
 
 .day-badge {
-  align-self: start;
   background: #e8f3ef;
   border-radius: 8px;
   color: var(--green);
   font-weight: 800;
+  left: 12px;
   padding: 8px 10px;
+  position: absolute;
+  top: 12px;
   text-align: center;
+  z-index: 1;
+}
+
+.itinerary-content {
+  align-content: center;
+  display: grid;
+  gap: 12px;
+  padding: 20px 20px 20px 0;
+}
+
+.itinerary-content h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.itinerary-content p {
+  color: var(--muted);
+  margin-bottom: 0;
 }
 
 .itinerary-day ul {
@@ -393,6 +440,44 @@ p {
 
 .itinerary-day li {
   margin-bottom: 6px;
+}
+
+.day-budget-preview {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 18px 45px rgba(20, 31, 52, 0.18);
+  display: grid;
+  gap: 4px;
+  opacity: 0;
+  padding: 12px 14px;
+  pointer-events: none;
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  transform: translateY(6px);
+  transition: opacity 150ms ease, transform 150ms ease;
+  visibility: hidden;
+  width: min(260px, calc(100% - 32px));
+  z-index: 3;
+}
+
+.day-budget-preview span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.day-budget-preview em {
+  color: var(--green);
+  font-style: normal;
+  font-weight: 800;
+}
+
+.itinerary-day:hover .day-budget-preview,
+.itinerary-day:focus-visible .day-budget-preview {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
 }
 
 .loading-bar {
@@ -432,5 +517,13 @@ p {
 
   .itinerary-day {
     grid-template-columns: 1fr;
+  }
+
+  .itinerary-content {
+    padding: 0 18px 18px;
+  }
+
+  .itinerary-image-wrap {
+    min-height: 180px;
   }
 }

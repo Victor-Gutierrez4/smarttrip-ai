@@ -43,7 +43,7 @@ export default function App() {
       budgetLevel,
       maxBudget: Number(currentForm.maxBudget),
       summary: calculateBudgetSummary({ ...currentForm, duration, budgetLevel }),
-      itinerary: generateItinerary(pointsOfInterest, duration, budgetLevel),
+      itinerary: generateItinerary(pointsOfInterest, duration, budgetLevel, currentForm.destination),
       hotels: [],
       restaurants: []
     };
@@ -146,7 +146,7 @@ export default function App() {
 
         <div className="list-panel itinerary-panel">
           <h2>Suggested Itinerary</h2>
-          <Itinerary days={trip.itinerary} />
+          <Itinerary days={trip.itinerary} summary={displayedSummary} />
         </div>
 
         {loading && <div className="loading-bar">Generating recommendations...</div>}
