@@ -33,6 +33,11 @@ const destinationProfiles = [
     cuisines: ['Cuban', 'Seafood', 'Latin fusion', 'Caribbean']
   },
   {
+    keywords: ['colombia', 'san andres', 'san andrés', 'cartagena', 'bogota', 'bogotá'],
+    neighborhoods: ['San Andres Island', 'Spratt Bight', 'La Loma', 'North End'],
+    cuisines: ['Caribbean seafood', 'Colombian grill', 'Arepa cafe', 'Island kitchen']
+  },
+  {
     keywords: ['london', 'england', 'uk'],
     neighborhoods: ['Soho', 'Shoreditch', 'Covent Garden', 'South Bank'],
     cuisines: ['Gastropub', 'Indian', 'Afternoon tea', 'Modern British']
@@ -97,7 +102,12 @@ async function requestLiveRecommendations(path, params) {
   }
 
   const data = await response.json();
-  return (data.results || []).slice(0, liveResultLimit);
+  return (data.results || [])
+    .slice(0, liveResultLimit)
+    .map((result) => ({
+      ...result,
+      resultSource: data.source === 'cache' ? 'google-places' : data.source
+    }));
 }
 
 function buildFallbackHotels({ destination, pointsOfInterest = [], budgetLevel = 'moderate' }) {
@@ -117,7 +127,8 @@ function buildFallbackHotels({ destination, pointsOfInterest = [], budgetLevel =
       rating: Number(scoreFromText(destination + style + neighborhood, index).toFixed(1)),
       estimatedPrice: profile.hotelNightly + ((seed + index * 23) % 55),
       distance: `${(0.3 + ((seed + index * 11) % 16) / 10).toFixed(1)} mi from ${anchor}`,
-      placeUrl: googleMapsSearchUrl(`${neighborhood} ${style} ${city}`)
+      placeUrl: googleMapsSearchUrl(`${neighborhood} ${style} ${city}`),
+      resultSource: 'demo'
     };
   });
 }
@@ -144,7 +155,8 @@ function buildFallbackRestaurants({ destination, budgetLevel = 'moderate' }) {
       priceCategory: priceByBudget[budgetLevel] || '$$',
       cuisine: `${cuisine} near ${neighborhood}`,
       address: `${neighborhood}, ${city}`,
-      placeUrl: googleMapsSearchUrl(`${city} ${cuisine} ${style}`)
+      placeUrl: googleMapsSearchUrl(`${city} ${cuisine} ${style}`),
+      resultSource: 'demo'
     };
   });
 }
@@ -179,4 +191,15 @@ export async function fetchRestaurants({ destination, pointsOfInterest = [], bud
 
 export function getRecommendationModeLabel() {
   return 'Google Places API with demo fallback';
+}
+
+export function getRecommendationSourceLabel(hotels = [], restaurants = []) {
+  const results = [...hotels, ...restaurants];
+  if (!results.length) {
+    return 'Loading recommendations';
+  }
+
+  return results.every((result) => result.resultSource === 'google-places')
+    ? 'Live Google Places results'
+    : 'Demo fallback results';
 }

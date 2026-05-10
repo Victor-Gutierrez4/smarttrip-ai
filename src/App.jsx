@@ -6,7 +6,7 @@ import TripSummary from './components/TripSummary';
 import Itinerary from './components/Itinerary';
 import { calculateBudgetSummary, getBudgetLevelFromTripBudget } from './services/budgetCalculator';
 import { calculateTripDuration, formatTripDates } from './services/dateRange';
-import { fetchHotels, fetchRestaurants, getRecommendationModeLabel } from './services/googlePlaces';
+import { fetchHotels, fetchRestaurants, getRecommendationSourceLabel } from './services/googlePlaces';
 import { generateItinerary } from './services/itineraryGenerator';
 
 const defaultForm = {
@@ -72,7 +72,6 @@ export default function App() {
     generateTrip(defaultForm);
   }, []);
 
-  const apiStatus = useMemo(() => getRecommendationModeLabel(), []);
   const selectedHotel = useMemo(
     () => trip.hotels.find((hotel) => hotel.id === selectedHotelId) || trip.hotels[0],
     [selectedHotelId, trip.hotels]
@@ -86,6 +85,10 @@ export default function App() {
         maxBudget: trip.maxBudget
       }),
     [selectedHotel, trip.budgetLevel, trip.duration, trip.maxBudget]
+  );
+  const recommendationSource = useMemo(
+    () => getRecommendationSourceLabel(trip.hotels, trip.restaurants),
+    [trip.hotels, trip.restaurants]
   );
 
   return (
@@ -108,7 +111,7 @@ export default function App() {
       <section className="container results-section">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">{apiStatus}</p>
+            <p className="eyebrow">{recommendationSource}</p>
             <h2>{trip.destination}</h2>
           </div>
           <span>{trip.dateRange} | {trip.duration} day trip | {trip.pointsOfInterest.length} points of interest</span>

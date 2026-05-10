@@ -94,7 +94,8 @@ function mapPlace(place, category, index, budgetLevel) {
       rating,
       estimatedPrice: estimateHotelPrice(place.priceLevel, budgetLevel, index, displayName, rating),
       distance: place.formattedAddress || 'Google Places result',
-      placeUrl
+      placeUrl,
+      resultSource: 'google-places'
     };
   }
 
@@ -105,7 +106,8 @@ function mapPlace(place, category, index, budgetLevel) {
     priceCategory: mapPriceLevel(place.priceLevel),
     cuisine: formatCuisine(place.types),
     address: place.formattedAddress,
-    placeUrl
+    placeUrl,
+    resultSource: 'google-places'
   };
 }
 
@@ -133,6 +135,16 @@ function formatCuisine(types = []) {
   return readableType ? readableType.replaceAll('_', ' ') : 'Restaurant';
 }
 
+function getPriceLevels(budgetLevel) {
+  const levels = {
+    budget: ['PRICE_LEVEL_INEXPENSIVE', 'PRICE_LEVEL_MODERATE'],
+    moderate: ['PRICE_LEVEL_MODERATE'],
+    luxury: ['PRICE_LEVEL_EXPENSIVE', 'PRICE_LEVEL_VERY_EXPENSIVE']
+  };
+
+  return levels[budgetLevel] || levels.moderate;
+}
+
 function buildTextQuery({ category, destination, pointOfInterest }) {
   const descriptors = {
     budget: {
@@ -151,7 +163,7 @@ function buildTextQuery({ category, destination, pointOfInterest }) {
   const budgetLevel = pointOfInterest?.budgetLevel || 'moderate';
   const placeType = descriptors[budgetLevel]?.[category] || descriptors.moderate[category];
   const locationAnchor = pointOfInterest?.name || '';
-  const location = locationAnchor ? `${destination} near ${locationAnchor}` : destination;
+  const location = locationAnchor ? `${locationAnchor}, ${destination}` : destination;
   return `${placeType} in ${location}`;
 }
 
@@ -201,7 +213,9 @@ export async function handlePlacesRequest(request, response, category) {
       },
       body: JSON.stringify({
         textQuery,
+        includedType: category === 'hotels' ? 'lodging' : 'restaurant',
         maxResultCount: maxResults,
+        priceLevels: getPriceLevels(budgetLevel),
         languageCode: 'en'
       })
     });

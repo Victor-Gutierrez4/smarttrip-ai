@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fetchHotels, fetchRestaurants } from '../services/googlePlaces';
+import { fetchHotels, fetchRestaurants, getRecommendationSourceLabel } from '../services/googlePlaces';
 
 describe('Google Places fallback recommendations', () => {
   it('generates different recommendations for different destinations', async () => {
@@ -22,5 +22,13 @@ describe('Google Places fallback recommendations', () => {
     expect(budgetRestaurants[0].name).not.toBe(luxuryRestaurants[0].name);
     expect(budgetRestaurants[0].priceCategory).toBe('$');
     expect(luxuryRestaurants[0].priceCategory).toBe('$$$$');
+  });
+
+  it('labels fallback recommendations clearly', async () => {
+    const hotels = await fetchHotels({ destination: 'San Andres, Colombia', budgetLevel: 'moderate' });
+    const restaurants = await fetchRestaurants({ destination: 'San Andres, Colombia', budgetLevel: 'moderate' });
+
+    expect(getRecommendationSourceLabel(hotels, restaurants)).toBe('Demo fallback results');
+    expect(restaurants[0].address).toContain('San Andres');
   });
 });
