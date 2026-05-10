@@ -86,14 +86,24 @@ export default async function handler(request, response) {
         return mapPlace(places[0], point, 'point-of-interest');
       })
     );
-    const nearbyQuery = points[0]
-      ? `top attractions beaches landmarks near ${points[0]}, ${destination}`
-      : `top attractions beaches landmarks in ${destination}`;
-    const nearbyPlaces = await searchPlaces({
-      apiKey,
-      textQuery: nearbyQuery,
-      maxResultCount: maxResults
-    });
+    const neededSuggestions = Math.max(duration - poiResults.filter(Boolean).length, 0);
+    const suggestionQueries = [
+      points[0] ? `top attractions near ${points[0]}, ${destination}` : `top attractions in ${destination}`,
+      points[0] ? `best beaches landmarks museums near ${points[0]}, ${destination}` : `best beaches landmarks museums in ${destination}`,
+      points[0] ? `things to do near ${points[0]}, ${destination}` : `things to do in ${destination}`
+    ];
+    const nearbyResults = neededSuggestions
+      ? await Promise.all(
+          suggestionQueries.map((textQuery) =>
+            searchPlaces({
+              apiKey,
+              textQuery,
+              maxResultCount: maxResults
+            })
+          )
+        )
+      : [];
+    const nearbyPlaces = nearbyResults.flat();
     const merged = [...poiResults, ...nearbyPlaces.map((place) => mapPlace(place, place.displayName?.text, 'nearby-suggestion'))]
       .filter(Boolean)
       .filter((place) => place.photos.length > 0);

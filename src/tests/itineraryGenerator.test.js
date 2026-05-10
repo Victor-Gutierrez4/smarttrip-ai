@@ -15,6 +15,19 @@ describe('Itinerary Generator', () => {
     expect(result[0].activities[0]).toContain('Akihabara');
   });
 
+  it('does not repeat user POIs when the trip is longer than the POI list', () => {
+    const result = generateItinerary(['San Andres Beach', 'Johnny Cay', 'Rocky Cay'], 5, 'moderate', 'Colombia');
+
+    expect(result).toHaveLength(5);
+    expect(result.map((day) => day.primaryPlace)).toEqual([
+      'San Andres Beach',
+      'Johnny Cay',
+      'Rocky Cay',
+      'Museum district',
+      'Popular shopping street'
+    ]);
+  });
+
   it('adds visual and nearby-place context to each day', () => {
     const result = generateItinerary(['Tokyo Tower'], 1, 'moderate', 'Tokyo, Japan', [
       { query: 'Tokyo Tower', name: 'Tokyo Tower', photos: ['/api/places/photo?name=tokyo-tower'] }

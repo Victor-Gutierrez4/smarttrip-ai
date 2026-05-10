@@ -10,6 +10,12 @@ const nearbyIdeas = {
   luxury: ['rooftop lounge', 'design district', 'chef-led dining area']
 };
 
+const extraDayIdeas = {
+  budget: ['Local public market', 'Neighborhood viewpoint', 'Historic walking area', 'Public beach walk', 'Local arts district'],
+  moderate: ['Museum district', 'Popular shopping street', 'Scenic waterfront walk', 'Cultural center', 'Old town food area'],
+  luxury: ['Design district', 'Private beach club area', 'Rooftop dining district', 'Marina promenade', 'Fine arts district']
+};
+
 export function generateItinerary(
   pointsOfInterest,
   duration = pointsOfInterest.length,
@@ -22,6 +28,7 @@ export function generateItinerary(
   const days = Math.max(Number(duration) || cleanPoints.length || 1, 1);
   const meals = mealIdeas[budgetLevel] || mealIdeas.moderate;
   const nearby = nearbyIdeas[budgetLevel] || nearbyIdeas.moderate;
+  const extraPlaces = extraDayIdeas[budgetLevel] || extraDayIdeas.moderate;
   const usedImages = new Set();
   const usedPlaces = new Set();
   const hotelPlace =
@@ -35,9 +42,26 @@ export function generateItinerary(
         }
       : null;
   const placeCandidates = [...itineraryPlaces, hotelPlace].filter(Boolean);
+  const plannedPlaceNames = [...cleanPoints, ...placeCandidates.map((place) => place.name || place.query), ...extraPlaces]
+    .map((place) => place?.trim())
+    .filter(Boolean);
 
   function placeKey(place) {
     return place.id || place.name || place.query;
+  }
+
+  function getFallbackPlace(index) {
+    const fallbackName =
+      plannedPlaceNames.find((place) => !usedPlaces.has(place)) ||
+      `${destination || 'Destination'} exploration area`;
+
+    usedPlaces.add(fallbackName);
+    return {
+      name: fallbackName,
+      address: destination,
+      imageUrl: '',
+      imageSource: 'Photo unavailable'
+    };
   }
 
   function getPlaceForDay(primary, index) {
@@ -48,12 +72,7 @@ export function generateItinerary(
     const place = exactMatch || suggestedMatch;
 
     if (!place) {
-      return {
-        name: primary,
-        address: destination,
-        imageUrl: '',
-        imageSource: 'Photo unavailable'
-      };
+      return getFallbackPlace(index);
     }
 
     const imageUrl = place.photos.find((photo) => !usedImages.has(photo)) || '';
@@ -78,8 +97,8 @@ export function generateItinerary(
   }
 
   return Array.from({ length: days }, (_, index) => {
-    const primary = cleanPoints[index % cleanPoints.length] || 'Explore the city center';
-    const secondary = cleanPoints[(index + 1) % cleanPoints.length] || 'Visit a nearby landmark';
+    const primary = plannedPlaceNames[index] || cleanPoints[0] || 'Explore the city center';
+    const secondary = plannedPlaceNames[index + 1] || 'Visit a nearby landmark';
     const nearbyPlace = nearby[index % nearby.length];
     const place = getPlaceForDay(primary, index);
 
