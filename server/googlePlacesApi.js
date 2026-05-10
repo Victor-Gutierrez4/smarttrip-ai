@@ -6,6 +6,7 @@ const fieldMask = [
   'places.rating',
   'places.priceLevel',
   'places.googleMapsUri',
+  'places.photos',
   'places.types'
 ].join(',');
 const maxResults = 3;
@@ -82,6 +83,10 @@ function googleMapsSearchUrl(query) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
+function photoUrls(photos = []) {
+  return photos.slice(0, 6).map((photo) => `/api/places/photo?name=${encodeURIComponent(photo.name)}&w=900`);
+}
+
 function mapPlace(place, category, index, budgetLevel) {
   const displayName = place.displayName?.text || (category === 'hotels' ? 'Recommended hotel' : 'Recommended restaurant');
   const rating = Number(place.rating || 4.2);
@@ -95,6 +100,7 @@ function mapPlace(place, category, index, budgetLevel) {
       estimatedPrice: estimateHotelPrice(place.priceLevel, budgetLevel, index, displayName, rating),
       distance: place.formattedAddress || 'Google Places result',
       placeUrl,
+      photos: photoUrls(place.photos),
       resultSource: 'google-places'
     };
   }
@@ -107,6 +113,7 @@ function mapPlace(place, category, index, budgetLevel) {
     cuisine: formatCuisine(place.types),
     address: place.formattedAddress,
     placeUrl,
+    photos: photoUrls(place.photos),
     resultSource: 'google-places'
   };
 }

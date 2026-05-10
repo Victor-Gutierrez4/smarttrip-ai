@@ -18,7 +18,11 @@ export default function Itinerary({ days, summary }) {
       {days.map((day) => (
         <article className="itinerary-day" key={day.day} tabIndex="0">
           <div className="itinerary-image-wrap">
-            <img alt={day.imageAlt} className="itinerary-image" src={day.imageUrl} />
+            {day.imageUrl ? (
+              <img alt={day.imageAlt} className="itinerary-image" src={day.imageUrl} />
+            ) : (
+              <div className="itinerary-image-missing">Photo unavailable for this place</div>
+            )}
             <div className="day-badge">Day {day.day}</div>
             <span className="image-source">{day.imageSource}</span>
           </div>

@@ -1,6 +1,6 @@
 const maxPhotoLookups = 6;
 
-export async function fetchAttractionPhotos({ destination, pointsOfInterest = [] }) {
+export async function fetchAttractionPhotos({ destination, pointsOfInterest = [], duration = 1 }) {
   if (typeof window === 'undefined') {
     return [];
   }
@@ -12,6 +12,7 @@ export async function fetchAttractionPhotos({ destination, pointsOfInterest = []
 
   const searchParams = new URLSearchParams({
     destination,
+    duration: String(duration),
     points: uniquePoints.join('|')
   });
 

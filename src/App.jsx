@@ -45,6 +45,7 @@ export default function App() {
       maxBudget: Number(currentForm.maxBudget),
       summary: calculateBudgetSummary({ ...currentForm, duration, budgetLevel }),
       itinerary: generateItinerary(pointsOfInterest, duration, budgetLevel, currentForm.destination),
+      itineraryPlaces: [],
       hotels: [],
       restaurants: []
     };
@@ -57,17 +58,14 @@ export default function App() {
     const [hotels, restaurants, attractionPhotos] = await Promise.all([
       fetchHotels({ ...currentForm, pointsOfInterest: nextTrip.pointsOfInterest, budgetLevel: nextTrip.budgetLevel }),
       fetchRestaurants({ ...currentForm, pointsOfInterest: nextTrip.pointsOfInterest, budgetLevel: nextTrip.budgetLevel }),
-      fetchAttractionPhotos({ destination: currentForm.destination, pointsOfInterest: nextTrip.pointsOfInterest })
+      fetchAttractionPhotos({
+        destination: currentForm.destination,
+        pointsOfInterest: nextTrip.pointsOfInterest,
+        duration: nextTrip.duration
+      })
     ]);
-    const itinerary = generateItinerary(
-      nextTrip.pointsOfInterest,
-      nextTrip.duration,
-      nextTrip.budgetLevel,
-      currentForm.destination,
-      attractionPhotos
-    );
 
-    setTrip({ ...nextTrip, hotels, restaurants, itinerary });
+    setTrip({ ...nextTrip, hotels, restaurants, itineraryPlaces: attractionPhotos });
     setSelectedHotelId(hotels[0]?.id || '');
     setLoading(false);
   }
@@ -94,6 +92,18 @@ export default function App() {
         maxBudget: trip.maxBudget
       }),
     [selectedHotel, trip.budgetLevel, trip.duration, trip.maxBudget]
+  );
+  const displayedItinerary = useMemo(
+    () =>
+      generateItinerary(
+        trip.pointsOfInterest,
+        trip.duration,
+        trip.budgetLevel,
+        trip.destination,
+        trip.itineraryPlaces,
+        selectedHotel
+      ),
+    [selectedHotel, trip.budgetLevel, trip.destination, trip.duration, trip.itineraryPlaces, trip.pointsOfInterest]
   );
   const recommendationSource = useMemo(
     () => getRecommendationSourceLabel(trip.hotels, trip.restaurants),
@@ -158,7 +168,7 @@ export default function App() {
 
         <div className="list-panel itinerary-panel">
           <h2>Suggested Itinerary</h2>
-          <Itinerary days={trip.itinerary} summary={displayedSummary} />
+          <Itinerary days={displayedItinerary} summary={displayedSummary} />
         </div>
 
         {loading && <div className="loading-bar">Generating recommendations...</div>}
