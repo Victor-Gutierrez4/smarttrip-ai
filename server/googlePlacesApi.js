@@ -12,6 +12,32 @@ const maxResults = 3;
 const cacheTtlMs = 15 * 60 * 1000;
 const hourlyLimit = 40;
 const hotelPriceWindow = 85;
+const hotelTiers = [
+  {
+    min: 100,
+    query: 'affordable budget hotels',
+    label: 'Value stay',
+    perks: ['basic room', 'transit-friendly location', 'simple stay near attractions']
+  },
+  {
+    min: 150,
+    query: 'comfortable well rated hotels',
+    label: 'Comfort stay',
+    perks: ['better location', 'higher comfort rating', 'more reliable amenities']
+  },
+  {
+    min: 250,
+    query: 'premium boutique hotels',
+    label: 'Premium stay',
+    perks: ['premium location', 'larger room estimate', 'stronger guest rating']
+  },
+  {
+    min: 400,
+    query: 'luxury upscale hotels',
+    label: 'Luxury stay',
+    perks: ['luxury property tier', 'top-rated area', 'upgraded stay experience']
+  }
+];
 
 const cache = new Map();
 const rateBuckets = new Map();
@@ -101,10 +127,21 @@ function normalizeNightlyBudget(value, budgetLevel = 'moderate') {
   return Math.max(Math.round(budget), 100);
 }
 
+function getHotelTier(nightlyBudget) {
+  const budget = Math.max(Number(nightlyBudget) || 100, 100);
+
+  return hotelTiers.reduce((selected, tier) => (budget >= tier.min ? tier : selected), hotelTiers[0]);
+}
+
+function pick(items, seed, offset = 0) {
+  return items[(seed + offset) % items.length];
+}
+
 function mapPlace(place, category, index, budgetLevel, nightlyBudget) {
   const displayName = place.displayName?.text || (category === 'hotels' ? 'Recommended hotel' : 'Recommended restaurant');
   const rating = Number(place.rating || 4.2);
   const placeUrl = place.googleMapsUri || googleMapsSearchUrl(`${displayName} ${place.formattedAddress || ''}`);
+  const hotelTier = getHotelTier(nightlyBudget);
 
   if (category === 'hotels') {
     return {
@@ -113,6 +150,7 @@ function mapPlace(place, category, index, budgetLevel, nightlyBudget) {
       rating,
       estimatedPrice: estimateHotelPrice(budgetLevel, index, displayName, rating, nightlyBudget),
       distance: place.formattedAddress || 'Google Places result',
+      priceContext: `${hotelTier.label}: ${pick(hotelTier.perks, hashText(displayName), index)}`,
       placeUrl,
       photos: photoUrls(place.photos),
       resultSource: 'google-places'
@@ -147,17 +185,18 @@ function formatCuisine(types = []) {
 }
 
 function buildTextQuery({ category, destination, pointOfInterest }) {
+  const hotelTier = getHotelTier(pointOfInterest?.nightlyBudget);
   const descriptors = {
     budget: {
-      hotels: 'affordable budget hotels',
+      hotels: hotelTier.query,
       restaurants: 'cheap local restaurants'
     },
     moderate: {
-      hotels: 'comfortable mid-range hotels',
+      hotels: hotelTier.query,
       restaurants: 'popular moderately priced restaurants'
     },
     luxury: {
-      hotels: 'upscale luxury hotels',
+      hotels: hotelTier.query,
       restaurants: 'upscale highly rated restaurants'
     }
   };
@@ -196,7 +235,8 @@ export async function handlePlacesRequest(request, response, category) {
     destination,
     pointOfInterest: {
       name: pointOfInterest,
-      budgetLevel
+      budgetLevel,
+      nightlyBudget
     }
   });
   const cacheKey = `${category}:${budgetLevel}:${nightlyBudget}:${textQuery.toLowerCase()}`;

@@ -184,6 +184,13 @@ p {
   color: var(--muted);
 }
 
+.result-card .price-context {
+  color: var(--green);
+  font-size: 0.86rem;
+  font-weight: 800;
+  margin-top: 3px;
+}
+
 .summary-panel {
   align-items: center;
   display: grid;

@@ -50,6 +50,32 @@ const fallbackProfile = {
 };
 const liveResultLimit = 3;
 const hotelPriceWindow = 85;
+const hotelTiers = [
+  {
+    min: 100,
+    label: 'Value stay',
+    styles: ['Budget Inn', 'Transit Lodge', 'Guest House', 'Value Hotel', 'Market Stay'],
+    perks: ['basic room', 'transit-friendly location', 'simple stay near attractions']
+  },
+  {
+    min: 150,
+    label: 'Comfort stay',
+    styles: ['Central Hotel', 'Garden Suites', 'Heritage Inn', 'Vista House', 'Market Hotel'],
+    perks: ['better location', 'higher comfort rating', 'more reliable amenities']
+  },
+  {
+    min: 250,
+    label: 'Premium stay',
+    styles: ['Premier Suites', 'Landmark Hotel', 'Boutique House', 'Signature Hotel', 'Grand Hotel'],
+    perks: ['premium location', 'larger room estimate', 'stronger guest rating']
+  },
+  {
+    min: 400,
+    label: 'Luxury stay',
+    styles: ['Grand Hotel', 'Luxury Tower', 'Landmark Resort', 'Signature Suites', 'Premier House'],
+    perks: ['luxury property tier', 'top-rated area', 'upgraded stay experience']
+  }
+];
 
 function scoreFromText(text, index) {
   const seed = [...text].reduce((total, char) => total + char.charCodeAt(0), index * 17);
@@ -83,6 +109,12 @@ function googleMapsSearchUrl(query) {
 
 function getBudgetStyles(stylesByBudget, budgetLevel) {
   return stylesByBudget[budgetLevel] || stylesByBudget.moderate;
+}
+
+function getHotelTier(nightlyBudget) {
+  const budget = Math.max(Number(nightlyBudget) || 100, 100);
+
+  return hotelTiers.reduce((selected, tier) => (budget >= tier.min ? tier : selected), hotelTiers[0]);
 }
 
 async function requestLiveRecommendations(path, params) {
@@ -135,11 +167,14 @@ function buildFallbackHotels({ destination, pointsOfInterest = [], budgetLevel =
   const destinationProfile = getDestinationProfile(destination);
   const seed = hashText(destination);
   const city = cityName(destination);
-  const hotelStyles = getBudgetStyles(hotelStylesByBudget, budgetLevel);
+  const hotelTier = getHotelTier(nightlyBudget);
+  const hotelStyles = hotelTier.styles || getBudgetStyles(hotelStylesByBudget, budgetLevel);
+  const neighborhoodOffset = Math.floor(normalizeNightlyBudget(nightlyBudget, budgetLevel) / 50);
 
   return hotelStyles.slice(0, 3).map((style, index) => {
     const anchor = pointsOfInterest[index % pointsOfInterest.length] || city;
-    const neighborhood = pick(destinationProfile.neighborhoods, seed, index);
+    const neighborhood = pick(destinationProfile.neighborhoods, seed, index + neighborhoodOffset);
+    const perk = pick(hotelTier.perks, seed, index);
 
     return {
       id: `hotel-${index}`,
@@ -147,6 +182,7 @@ function buildFallbackHotels({ destination, pointsOfInterest = [], budgetLevel =
       rating: Number(scoreFromText(destination + style + neighborhood, index).toFixed(1)),
       estimatedPrice: estimateNightlyPrice({ nightlyBudget, seed, index, travelers, isPremium: budgetLevel === 'luxury' }),
       distance: `${(0.3 + ((seed + index * 11) % 16) / 10).toFixed(1)} mi from ${anchor}`,
+      priceContext: `${hotelTier.label}: ${perk}`,
       placeUrl: googleMapsSearchUrl(`${neighborhood} ${style} ${city}`),
       resultSource: 'demo'
     };
@@ -184,10 +220,12 @@ function buildFallbackRestaurants({ destination, budgetLevel = 'moderate', trave
 
 function alignHotelPricesToNightlyBudget(hotels, nightlyBudget, budgetLevel, travelers) {
   const minimumNightly = normalizeNightlyBudget(nightlyBudget, budgetLevel);
+  const hotelTier = getHotelTier(nightlyBudget);
 
   return hotels
     .map((hotel, index) => ({
       ...hotel,
+      priceContext: hotel.priceContext || `${hotelTier.label}: ${pick(hotelTier.perks, hashText(hotel.name || ''), index)}`,
       estimatedPrice:
         hotel.estimatedPrice >= minimumNightly
           ? hotel.estimatedPrice

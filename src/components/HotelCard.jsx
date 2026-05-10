@@ -15,6 +15,7 @@ export default function HotelCard({ hotel, isSelected, onSelect, onViewMap }) {
             </a>
           </h3>
           <p>{hotel.distance}</p>
+          {hotel.priceContext && <p className="price-context">{hotel.priceContext}</p>}
         </div>
         <div className="result-meta">
           <span>{hotel.rating.toFixed(1)} rating</span>
@@ -26,6 +27,7 @@ export default function HotelCard({ hotel, isSelected, onSelect, onViewMap }) {
         <strong>{hotel.name}</strong>
         <span>{hotel.rating.toFixed(1)} rating</span>
         <span>${hotel.estimatedPrice}/night estimate | {hotel.distance}</span>
+        {hotel.priceContext && <span>{hotel.priceContext}</span>}
         <div className="card-actions">
           <button type="button" className="map-button" onClick={onViewMap}>
             Preview on map
