@@ -7,7 +7,7 @@ const fieldMask = [
   'places.photos'
 ].join(',');
 const maxPoiLookups = 6;
-const maxResults = 10;
+const maxResults = 20;
 
 function cleanText(value = '') {
   return String(value).replace(/[^\w\s,.'-]/g, '').trim().slice(0, 120);

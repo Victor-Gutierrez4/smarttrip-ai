@@ -56,6 +56,16 @@ export function generateItinerary(
     .map((place) => place?.trim())
     .filter(Boolean);
 
+  const allGooglePhotos = placeCandidates
+    .flatMap((place) =>
+      (place.photos || []).map((photo) => ({
+        url: typeof photo === 'string' ? photo : photo?.url,
+        placeName: place.name || place.query,
+        source: place.source
+      }))
+    )
+    .filter((p) => p.url);
+
   function placeKey(place) {
     return place.id || place.name || place.query;
   }
@@ -119,16 +129,32 @@ export function generateItinerary(
     const primary = plannedPlaceNames[index] || cleanPoints[0] || 'Explore the city center';
     const secondary = plannedPlaceNames[index + 1] || 'Visit a nearby landmark';
     const nearbyPlace = nearby[index % nearby.length];
+    
+    let imageUrl = '';
+    let imageSource = 'Suggested travel destination';
+    
     const place = getPlaceForDay(primary, index);
+    
+    if (place.imageUrl) {
+      imageUrl = place.imageUrl;
+      imageSource = place.imageSource;
+    } else if (allGooglePhotos.length > 0) {
+      const photoIndex = index % allGooglePhotos.length;
+      const googlePhoto = allGooglePhotos[photoIndex];
+      imageUrl = googlePhoto.url;
+      imageSource = googlePhoto.source === 'selected-hotel' 
+        ? 'Hotel photo'
+        : 'Google Places photo';
+    }
 
     return {
       day: index + 1,
       title: `Day ${index + 1}`,
       primaryPlace: place.name,
       nearbyPlace,
-      imageUrl: place.imageUrl,
+      imageUrl,
       placeUrl: place.placeUrl,
-      imageSource: place.imageSource,
+      imageSource,
       imageAlt: `${place.name} travel preview`,
       activities: [
         `Morning visit to ${place.name}`,
