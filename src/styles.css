@@ -398,7 +398,9 @@ p {
 
 .itinerary-image-missing {
   align-items: center;
-  background: #eef3fb;
+  background:
+    linear-gradient(135deg, rgba(36, 87, 214, 0.12), rgba(31, 138, 112, 0.16)),
+    #eef3fb;
   color: var(--muted);
   display: grid;
   gap: 4px;
@@ -408,7 +410,13 @@ p {
   padding: 24px;
   position: absolute;
   text-align: center;
+  text-decoration: none;
   width: 100%;
+}
+
+.itinerary-image-missing:hover,
+.itinerary-image-missing:focus-visible {
+  color: var(--blue);
 }
 
 .itinerary-image-missing strong {

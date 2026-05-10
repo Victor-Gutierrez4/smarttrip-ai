@@ -85,4 +85,12 @@ describe('Itinerary Generator', () => {
     expect(result[1].primaryPlace).toBe('Island Hotel');
     expect(result[1].imageSource).toBe('Selected hotel photo');
   });
+
+  it('uses exact Google Maps links when no photo is available', () => {
+    const result = generateItinerary(['San Andres Beach'], 1, 'moderate', 'Colombia');
+
+    expect(result[0].imageUrl).toBe('');
+    expect(result[0].placeUrl).toContain('google.com/maps/search');
+    expect(result[0].placeUrl).toContain('San%20Andres%20Beach');
+  });
 });

@@ -16,6 +16,10 @@ const extraDayIdeas = {
   luxury: ['Design district', 'Private beach club area', 'Rooftop dining district', 'Marina promenade', 'Fine arts district']
 };
 
+function googleMapsSearchUrl(query, destination) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${query} ${destination}`.trim())}`;
+}
+
 export function generateItinerary(
   pointsOfInterest,
   duration = pointsOfInterest.length,
@@ -60,7 +64,8 @@ export function generateItinerary(
       name: fallbackName,
       address: destination,
       imageUrl: '',
-      imageSource: 'Photo unavailable'
+      imageSource: 'Open exact place',
+      placeUrl: googleMapsSearchUrl(fallbackName, destination)
     };
   }
 
@@ -87,6 +92,7 @@ export function generateItinerary(
       name: displayName,
       address: place.address,
       imageUrl,
+      placeUrl: place.placeUrl || googleMapsSearchUrl(displayName, destination),
       imageSource:
         place.source === 'selected-hotel'
           ? 'Selected hotel photo'
@@ -108,6 +114,7 @@ export function generateItinerary(
       primaryPlace: place.name,
       nearbyPlace,
       imageUrl: place.imageUrl,
+      placeUrl: place.placeUrl,
       imageSource: place.imageSource,
       imageAlt: `${place.name} travel preview`,
       activities: [

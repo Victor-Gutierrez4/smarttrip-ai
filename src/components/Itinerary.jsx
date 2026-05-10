@@ -21,10 +21,10 @@ export default function Itinerary({ days, summary }) {
             {day.imageUrl ? (
               <img alt={day.imageAlt} className="itinerary-image" src={day.imageUrl} />
             ) : (
-              <div className="itinerary-image-missing">
+              <a className="itinerary-image-missing" href={day.placeUrl} target="_blank" rel="noreferrer">
                 <strong>{day.primaryPlace}</strong>
-                <span>No Google photo returned</span>
-              </div>
+                <span>View this exact place on Google Maps</span>
+              </a>
             )}
             <div className="day-badge">Day {day.day}</div>
             <span className="image-source">{day.imageSource}</span>
