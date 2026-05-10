@@ -110,12 +110,13 @@ async function requestLiveRecommendations(path, params) {
     }));
 }
 
-function buildFallbackHotels({ destination, pointsOfInterest = [], budgetLevel = 'moderate' }) {
+function buildFallbackHotels({ destination, pointsOfInterest = [], budgetLevel = 'moderate', travelers = 1 }) {
   const profile = getBudgetProfile(budgetLevel);
   const destinationProfile = getDestinationProfile(destination);
   const seed = hashText(destination);
   const city = cityName(destination);
   const hotelStyles = getBudgetStyles(hotelStylesByBudget, budgetLevel);
+  const travelerSurcharge = Math.max(travelers - 2, 0) * 20;
 
   return hotelStyles.slice(0, 3).map((style, index) => {
     const anchor = pointsOfInterest[index % pointsOfInterest.length] || city;
@@ -125,7 +126,7 @@ function buildFallbackHotels({ destination, pointsOfInterest = [], budgetLevel =
       id: `hotel-${index}`,
       name: `${neighborhood} ${style}`,
       rating: Number(scoreFromText(destination + style + neighborhood, index).toFixed(1)),
-      estimatedPrice: profile.hotelNightly + ((seed + index * 23) % 55),
+      estimatedPrice: profile.hotelNightly + travelerSurcharge + ((seed + index * 23) % 55),
       distance: `${(0.3 + ((seed + index * 11) % 16) / 10).toFixed(1)} mi from ${anchor}`,
       placeUrl: googleMapsSearchUrl(`${neighborhood} ${style} ${city}`),
       resultSource: 'demo'
@@ -133,7 +134,7 @@ function buildFallbackHotels({ destination, pointsOfInterest = [], budgetLevel =
   });
 }
 
-function buildFallbackRestaurants({ destination, budgetLevel = 'moderate' }) {
+function buildFallbackRestaurants({ destination, budgetLevel = 'moderate', travelers = 1 }) {
   const destinationProfile = getDestinationProfile(destination);
   const seed = hashText(destination);
   const city = cityName(destination);
@@ -143,6 +144,7 @@ function buildFallbackRestaurants({ destination, budgetLevel = 'moderate' }) {
     luxury: '$$$$'
   };
   const restaurantStyles = getBudgetStyles(restaurantStylesByBudget, budgetLevel);
+  const groupText = travelers > 3 ? 'group-friendly' : 'cozy';
 
   return restaurantStyles.slice(0, 3).map((style, index) => {
     const cuisine = pick(destinationProfile.cuisines, seed, index);
@@ -153,7 +155,7 @@ function buildFallbackRestaurants({ destination, budgetLevel = 'moderate' }) {
       name: `${city} ${cuisine} ${style}`,
       rating: Number(scoreFromText(destination + cuisine + style, index).toFixed(1)),
       priceCategory: priceByBudget[budgetLevel] || '$$',
-      cuisine: `${cuisine} near ${neighborhood}`,
+      cuisine: `${groupText} ${cuisine} near ${neighborhood}`,
       address: `${neighborhood}, ${city}`,
       placeUrl: googleMapsSearchUrl(`${city} ${cuisine} ${style}`),
       resultSource: 'demo'
@@ -161,31 +163,33 @@ function buildFallbackRestaurants({ destination, budgetLevel = 'moderate' }) {
   });
 }
 
-export async function fetchHotels({ destination, pointsOfInterest = [], budgetLevel = 'moderate' }) {
+export async function fetchHotels({ destination, pointsOfInterest = [], budgetLevel = 'moderate', travelers = 1 }) {
   try {
     const hotels = await requestLiveRecommendations('/api/places/hotels', {
       destination,
       poi: pointsOfInterest[0],
-      budgetLevel
+      budgetLevel,
+      travelers
     });
 
-    return hotels.length ? hotels : buildFallbackHotels({ destination, pointsOfInterest, budgetLevel });
+    return hotels.length ? hotels : buildFallbackHotels({ destination, pointsOfInterest, budgetLevel, travelers });
   } catch {
-    return buildFallbackHotels({ destination, pointsOfInterest, budgetLevel });
+    return buildFallbackHotels({ destination, pointsOfInterest, budgetLevel, travelers });
   }
 }
 
-export async function fetchRestaurants({ destination, pointsOfInterest = [], budgetLevel = 'moderate' }) {
+export async function fetchRestaurants({ destination, pointsOfInterest = [], budgetLevel = 'moderate', travelers = 1 }) {
   try {
     const restaurants = await requestLiveRecommendations('/api/places/restaurants', {
       destination,
       poi: pointsOfInterest[0],
-      budgetLevel
+      budgetLevel,
+      travelers
     });
 
-    return restaurants.length ? restaurants : buildFallbackRestaurants({ destination, budgetLevel });
+    return restaurants.length ? restaurants : buildFallbackRestaurants({ destination, budgetLevel, travelers });
   } catch {
-    return buildFallbackRestaurants({ destination, budgetLevel });
+    return buildFallbackRestaurants({ destination, budgetLevel, travelers });
   }
 }
 

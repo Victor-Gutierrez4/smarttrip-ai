@@ -33,6 +33,17 @@ export default function SearchForm({ form, onChange, onSubmit }) {
           />
         </div>
         <div className="col-md-6">
+          <label className="form-label" htmlFor="startLocation">Starting Location</label>
+          <input
+            className="form-control"
+            id="startLocation"
+            placeholder="Los Angeles, CA"
+            value={form.startLocation}
+            onChange={(event) => updateField('startLocation', event.target.value)}
+            required
+          />
+        </div>
+        <div className="col-md-6">
           <label className="form-label" htmlFor="startDate">Start Date</label>
           <input
             className="form-control"
@@ -68,6 +79,34 @@ export default function SearchForm({ form, onChange, onSubmit }) {
             value={form.pointsText}
             onChange={(event) => updateField('pointsText', event.target.value)}
           />
+        </div>
+        <div className="col-md-6">
+          <label className="form-label" htmlFor="travelers">Travelers</label>
+          <input
+            className="form-control"
+            id="travelers"
+            type="number"
+            min="1"
+            max="10"
+            value={form.travelers}
+            onChange={(event) => updateField('travelers', Number(event.target.value))}
+            required
+          />
+        </div>
+        <div className="col-md-6">
+          <label className="form-label" htmlFor="roundTrip">Round Trip</label>
+          <div className="form-check mt-2">
+            <input
+              className="form-check-input"
+              id="roundTrip"
+              type="checkbox"
+              checked={form.roundTrip}
+              onChange={(event) => updateField('roundTrip', event.target.checked)}
+            />
+            <label className="form-check-label" htmlFor="roundTrip">
+              Include return travel cost in budget
+            </label>
+          </div>
         </div>
         <div className="col-12">
           <div className="budget-range-header">

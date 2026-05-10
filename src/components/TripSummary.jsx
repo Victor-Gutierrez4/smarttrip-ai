@@ -23,6 +23,11 @@ export default function TripSummary({ summary, selectedHotel }) {
           {money.format(summary.dailyAverage)} daily ground average
           {selectedHotel ? ` | ${money.format(summary.hotelNightly)} nightly hotel estimate` : ''}
         </span>
+        <div className="budget-note">
+          <span>{summary.travelers} traveler{summary.travelers === 1 ? '' : 's'}</span>
+          <span>{summary.roundTrip ? 'Round trip included' : 'One-way travel only'}</span>
+          <span>From {summary.startLocation || 'your starting location'} to {summary.destination}</span>
+        </div>
         <div className={`budget-status ${isOverBudget ? 'over-budget' : 'within-budget'}`}>
           <strong>{isOverBudget ? 'Over selected budget' : 'Within selected budget'}</strong>
           <span>
@@ -48,6 +53,10 @@ export default function TripSummary({ summary, selectedHotel }) {
         <li>
           <span>Budget per day</span>
           <strong>{money.format(summary.dailyBudget)}</strong>
+        </li>
+        <li>
+          <span>Budget per traveler</span>
+          <strong>{money.format(summary.dailyBudgetPerPerson)}</strong>
         </li>
         {selectedHotel && (
           <li>

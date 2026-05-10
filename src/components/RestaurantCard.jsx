@@ -1,9 +1,9 @@
-export default function RestaurantCard({ restaurant }) {
+export default function RestaurantCard({ restaurant, onViewMap }) {
   return (
-    <a className="result-card interactive-result" href={restaurant.placeUrl} target="_blank" rel="noreferrer">
+    <div className="result-card interactive-result">
       <div>
         <h3>{restaurant.name}</h3>
-        <p>{restaurant.cuisine}</p>
+        <p>{restaurant.cuisine || restaurant.address}</p>
       </div>
       <div className="result-meta">
         <span>{restaurant.rating.toFixed(1)} rating</span>
@@ -13,8 +13,10 @@ export default function RestaurantCard({ restaurant }) {
         <strong>{restaurant.name}</strong>
         <span>{restaurant.rating.toFixed(1)} rating · {restaurant.priceCategory}</span>
         <span>{restaurant.address || restaurant.cuisine}</span>
-        <em>Open Google Maps page</em>
+        <button type="button" className="map-button" onClick={onViewMap}>
+          Preview on map
+        </button>
       </div>
-    </a>
+    </div>
   );
 }

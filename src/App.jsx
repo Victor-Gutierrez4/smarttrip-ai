@@ -12,10 +12,13 @@ import { generateItinerary } from './services/itineraryGenerator';
 
 const defaultForm = {
   destination: 'Tokyo, Japan',
+  startLocation: 'Los Angeles, CA',
   pointsText: 'Shibuya Crossing, Tokyo Tower, Akihabara',
   startDate: '2026-06-08',
   endDate: '2026-06-12',
-  maxBudget: 1850
+  maxBudget: 1850,
+  roundTrip: true,
+  travelers: 2
 };
 
 function parsePoints(pointsText) {
@@ -25,25 +28,34 @@ function parsePoints(pointsText) {
     .filter(Boolean);
 }
 
-export default function App() {
+function App() {
   const [form, setForm] = useState(defaultForm);
   const [trip, setTrip] = useState(() => buildTrip(defaultForm));
   const [selectedHotelId, setSelectedHotelId] = useState('');
+  const [activeMapPlace, setActiveMapPlace] = useState(null);
   const [loading, setLoading] = useState(false);
 
   function buildTrip(currentForm) {
     const pointsOfInterest = parsePoints(currentForm.pointsText);
     const duration = calculateTripDuration(currentForm.startDate, currentForm.endDate);
-    const budgetLevel = getBudgetLevelFromTripBudget(currentForm.maxBudget, duration);
+    const budgetLevel = getBudgetLevelFromTripBudget(currentForm.maxBudget, duration, currentForm.travelers);
 
     return {
       destination: currentForm.destination,
+      startLocation: currentForm.startLocation,
       pointsOfInterest,
       dateRange: formatTripDates(currentForm.startDate, currentForm.endDate),
       duration,
       budgetLevel,
       maxBudget: Number(currentForm.maxBudget),
-      summary: calculateBudgetSummary({ ...currentForm, duration, budgetLevel }),
+      roundTrip: Boolean(currentForm.roundTrip),
+      travelers: Number(currentForm.travelers),
+      summary: calculateBudgetSummary({
+        ...currentForm,
+        duration,
+        budgetLevel,
+        destination: currentForm.destination
+      }),
       itinerary: generateItinerary(pointsOfInterest, duration, budgetLevel, currentForm.destination),
       itineraryPlaces: [],
       hotels: [],
@@ -56,8 +68,18 @@ export default function App() {
 
     const nextTrip = buildTrip(currentForm);
     const [hotels, restaurants, attractionPhotos] = await Promise.all([
-      fetchHotels({ ...currentForm, pointsOfInterest: nextTrip.pointsOfInterest, budgetLevel: nextTrip.budgetLevel }),
-      fetchRestaurants({ ...currentForm, pointsOfInterest: nextTrip.pointsOfInterest, budgetLevel: nextTrip.budgetLevel }),
+      fetchHotels({
+        ...currentForm,
+        pointsOfInterest: nextTrip.pointsOfInterest,
+        budgetLevel: nextTrip.budgetLevel,
+        travelers: currentForm.travelers
+      }),
+      fetchRestaurants({
+        ...currentForm,
+        pointsOfInterest: nextTrip.pointsOfInterest,
+        budgetLevel: nextTrip.budgetLevel,
+        travelers: currentForm.travelers
+      }),
       fetchAttractionPhotos({
         destination: currentForm.destination,
         pointsOfInterest: nextTrip.pointsOfInterest,
@@ -75,6 +97,22 @@ export default function App() {
     await generateTrip(form);
   }
 
+  function openMapPlace(place) {
+    if (!place) return;
+    const query = place.query || place.name || place.primaryPlace || place.title || '';
+    const embeddedQuery = encodeURIComponent(query || place.address || trip.destination);
+
+    setActiveMapPlace({
+      title: place.name || place.primaryPlace || place.title || 'Map preview',
+      placeUrl: place.placeUrl || `https://www.google.com/maps/search/?api=1&query=${embeddedQuery}`,
+      embedUrl: `https://www.google.com/maps?q=${embeddedQuery}&output=embed`
+    });
+  }
+
+  function closeMapPlace() {
+    setActiveMapPlace(null);
+  }
+
   useEffect(() => {
     generateTrip(defaultForm);
   }, []);
@@ -89,9 +127,13 @@ export default function App() {
         budgetLevel: trip.budgetLevel,
         duration: trip.duration,
         hotelNightly: selectedHotel?.estimatedPrice,
-        maxBudget: trip.maxBudget
+        maxBudget: trip.maxBudget,
+        travelers: trip.travelers,
+        roundTrip: trip.roundTrip,
+        startLocation: trip.startLocation,
+        destination: trip.destination
       }),
-    [selectedHotel, trip.budgetLevel, trip.duration, trip.maxBudget]
+    [selectedHotel, trip.budgetLevel, trip.duration, trip.maxBudget, trip.travelers, trip.roundTrip, trip.startLocation, trip.destination]
   );
   const displayedItinerary = useMemo(
     () =>
@@ -149,6 +191,7 @@ export default function App() {
                   isSelected={hotel.id === selectedHotel?.id}
                   key={hotel.id}
                   onSelect={() => setSelectedHotelId(hotel.id)}
+                  onViewMap={() => openMapPlace(hotel)}
                 />
               ))}
             </div>
@@ -160,7 +203,11 @@ export default function App() {
                 <p className="empty-state">Generate a plan to load restaurant recommendations.</p>
               )}
               {trip.restaurants.map((restaurant) => (
-                <RestaurantCard restaurant={restaurant} key={restaurant.id} />
+                <RestaurantCard
+                  restaurant={restaurant}
+                  key={restaurant.id}
+                  onViewMap={() => openMapPlace(restaurant)}
+                />
               ))}
             </div>
           </div>
@@ -168,8 +215,30 @@ export default function App() {
 
         <div className="list-panel itinerary-panel">
           <h2>Suggested Itinerary</h2>
-          <Itinerary days={displayedItinerary} summary={displayedSummary} />
+          <Itinerary days={displayedItinerary} summary={displayedSummary} onSelectPlace={openMapPlace} />
         </div>
+
+        {activeMapPlace && (
+          <div className="map-modal">
+            <div className="map-modal-content">
+              <button className="modal-close" type="button" onClick={closeMapPlace}>
+                Close
+              </button>
+              <h3>{activeMapPlace.title}</h3>
+              <div className="map-frame">
+                <iframe
+                  title="Place map preview"
+                  src={activeMapPlace.embedUrl}
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <a href={activeMapPlace.placeUrl} target="_blank" rel="noreferrer" className="map-link">
+                Open full map in Google Maps
+              </a>
+            </div>
+          </div>
+        )}
 
         {loading && <div className="loading-bar">Generating recommendations...</div>}
       </section>

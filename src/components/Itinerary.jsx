@@ -4,7 +4,7 @@ const money = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 0
 });
 
-export default function Itinerary({ days, summary }) {
+export default function Itinerary({ days, summary, onSelectPlace }) {
   const dayCount = Math.max(days.length, 1);
   const dailyBreakdown = {
     hotel: summary ? summary.hotelNightly : 0,
@@ -16,15 +16,21 @@ export default function Itinerary({ days, summary }) {
   return (
     <section className="itinerary-list">
       {days.map((day) => (
-        <article className="itinerary-day" key={day.day} tabIndex="0">
+        <article
+          className="itinerary-day"
+          key={day.day}
+          tabIndex="0"
+          onClick={() => onSelectPlace?.(day)}
+          onMouseEnter={() => onSelectPlace?.(day)}
+        >
           <div className="itinerary-image-wrap">
             {day.imageUrl ? (
               <img alt={day.imageAlt} className="itinerary-image" src={day.imageUrl} />
             ) : (
-              <a className="itinerary-image-missing" href={day.placeUrl} target="_blank" rel="noreferrer">
+              <div className="itinerary-image-missing">
                 <strong>{day.primaryPlace}</strong>
-                <span>View this exact place on Google Maps</span>
-              </a>
+                <span>Preview this place on Google Maps</span>
+              </div>
             )}
             <div className="day-badge">Day {day.day}</div>
             <span className="image-source">{day.imageSource}</span>
