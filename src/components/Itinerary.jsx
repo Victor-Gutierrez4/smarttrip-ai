@@ -23,10 +23,11 @@ export default function Itinerary({ days, summary, onSelectPlace }) {
           onClick={() => onSelectPlace?.(day)}
           onMouseEnter={() => onSelectPlace?.(day)}
         >
-          <div className="itinerary-image-wrap">
-            {day.imageUrl ? (
-              <img alt={day.imageAlt} className="itinerary-image" src={day.imageUrl} />
-            ) : (
+          <div
+            className="itinerary-image-wrap"
+            style={day.imageUrl ? { backgroundImage: `url(${day.imageUrl})` } : undefined}
+          >
+            {!day.imageUrl && (
               <div className="itinerary-image-missing">
                 <strong>{day.primaryPlace}</strong>
                 <span>Preview this place on Google Maps</span>

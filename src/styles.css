@@ -299,13 +299,42 @@ p {
   min-width: min(300px, calc(100vw - 48px));
   opacity: 0;
   padding: 12px 14px;
-  pointer-events: none;
+  pointer-events: auto;
   position: absolute;
-  top: calc(100% - 2px);
+  top: calc(100% + 8px);
   transform: translateY(6px);
   transition: opacity 150ms ease, transform 150ms ease;
   visibility: hidden;
+  width: max-content;
   z-index: 10;
+}
+
+.place-preview button {
+  background: var(--blue);
+  border: 0;
+  border-radius: 999px;
+  color: white;
+  cursor: pointer;
+  font-weight: 800;
+  padding: 8px 12px;
+}
+
+.place-preview button:hover,
+.place-preview button:focus-visible {
+  background: #1344bb;
+}
+
+.interactive-card-button {
+  align-items: flex-start;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr auto;
+  padding: 0;
+  text-align: left;
+  width: 100%;
 }
 
 .place-preview span {
@@ -384,16 +413,16 @@ p {
 }
 
 .itinerary-image-wrap {
+  background-color: #eef3fb;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   min-height: 190px;
   position: relative;
 }
 
 .itinerary-image {
-  height: 100%;
-  inset: 0;
-  object-fit: cover;
-  position: absolute;
-  width: 100%;
+  display: none;
 }
 
 .itinerary-image-missing {
