@@ -14,7 +14,7 @@ function cleanText(value = '') {
 }
 
 function photoUrl(photoName) {
-  return `/api/places/photo?name=${encodeURIComponent(photoName)}&w=900`;
+  return `/api/places/photo?name=${encodeURIComponent(photoName)}&w=900&v=${Date.now()}`;
 }
 
 function mapPlace(place, query, source) {
@@ -57,6 +57,10 @@ async function searchPlaces({ apiKey, textQuery, maxResultCount }) {
 }
 
 export default async function handler(request, response) {
+  response.setHeader('Cache-Control', 'no-store, max-age=0');
+  response.setHeader('CDN-Cache-Control', 'no-store');
+  response.setHeader('Vercel-CDN-Cache-Control', 'no-store');
+
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
   const destination = cleanText(request.query.destination);
   const duration = Math.min(Math.max(Number(request.query.duration) || 1, 1), maxResults);

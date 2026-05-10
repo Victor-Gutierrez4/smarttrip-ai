@@ -1,4 +1,8 @@
 export default async function handler(request, response) {
+  response.setHeader('Cache-Control', 'no-store, max-age=0');
+  response.setHeader('CDN-Cache-Control', 'no-store');
+  response.setHeader('Vercel-CDN-Cache-Control', 'no-store');
+
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
   const photoName = String(request.query.name || '');
   const width = Math.min(Math.max(Number(request.query.w) || 900, 200), 1200);

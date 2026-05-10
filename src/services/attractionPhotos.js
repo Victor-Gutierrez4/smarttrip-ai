@@ -13,11 +13,14 @@ export async function fetchAttractionPhotos({ destination, pointsOfInterest = []
   const searchParams = new URLSearchParams({
     destination,
     duration: String(duration),
-    points: uniquePoints.join('|')
+    points: uniquePoints.join('|'),
+    generatedAt: String(Date.now())
   });
 
   try {
-    const response = await fetch(`/api/places/attractions?${searchParams.toString()}`);
+    const response = await fetch(`/api/places/attractions?${searchParams.toString()}`, {
+      cache: 'no-store'
+    });
     if (!response.ok) {
       return [];
     }
