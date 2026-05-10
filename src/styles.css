@@ -386,6 +386,18 @@ p {
   margin-bottom: 3px;
 }
 
+.place-name-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.place-name-link:hover,
+.place-name-link:focus-visible {
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .result-meta {
   display: grid;
   justify-items: end;

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { calculateBudgetSummary, calculateTripTotal, getBudgetLevelFromTripBudget } from '../services/budgetCalculator';
+import {
+  calculateBudgetSummary,
+  calculateTripTotal,
+  getBudgetLevelFromTripBudget,
+  getTravelCostLabel
+} from '../services/budgetCalculator';
 
 describe('Budget Calculator', () => {
   it('calculates total correctly', () => {
@@ -59,6 +64,21 @@ describe('Budget Calculator', () => {
     expect(roundTrip.flightTotal).toBe(oneWay.flightTotal * 2);
     expect(roundTrip.startLocation).toBe('Los Angeles, CA');
     expect(roundTrip.roundTrip).toBe(true);
+  });
+
+  it('prices nearby regional trips lower than flights', () => {
+    const result = calculateBudgetSummary({
+      budgetLevel: 'moderate',
+      duration: 3,
+      startLocation: 'New Jersey',
+      destination: 'New York',
+      travelers: 1,
+      roundTrip: true
+    });
+
+    expect(result.flightTotal).toBe(220);
+    expect(result.travelCostLabel).toBe('Regional travel estimate');
+    expect(getTravelCostLabel('New Jersey', 'New York')).toBe('Regional travel estimate');
   });
 
   it('derives travel style from budget per day', () => {

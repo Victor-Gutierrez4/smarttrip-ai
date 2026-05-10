@@ -11,7 +11,7 @@ export default function TripSummary({ summary, selectedHotel }) {
     ['Hotel total', summary.hotelTotal],
     ['Food', summary.foodTotal],
     ['Transportation', summary.transportationTotal],
-    ['Flight estimate', summary.flightTotal]
+    [summary.travelCostLabel || 'Travel estimate', summary.flightTotal]
   ];
 
   return (

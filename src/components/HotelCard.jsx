@@ -3,7 +3,17 @@ export default function HotelCard({ hotel, isSelected, onSelect, onViewMap }) {
     <div className={`result-card interactive-result ${isSelected ? 'selected-result' : ''}`}>
       <button type="button" className="interactive-card-button" onClick={onSelect}>
         <div>
-          <h3>{hotel.name}</h3>
+          <h3>
+            <a
+              className="place-name-link"
+              href={hotel.placeUrl}
+              onClick={(event) => event.stopPropagation()}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {hotel.name}
+            </a>
+          </h3>
           <p>{hotel.distance}</p>
         </div>
         <div className="result-meta">
