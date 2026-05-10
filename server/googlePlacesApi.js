@@ -134,8 +134,24 @@ function formatCuisine(types = []) {
 }
 
 function buildTextQuery({ category, destination, pointOfInterest }) {
-  const placeType = category === 'hotels' ? 'hotels' : 'restaurants';
-  const location = pointOfInterest ? `${destination} near ${pointOfInterest}` : destination;
+  const descriptors = {
+    budget: {
+      hotels: 'affordable budget hotels',
+      restaurants: 'cheap local restaurants'
+    },
+    moderate: {
+      hotels: 'comfortable mid-range hotels',
+      restaurants: 'popular moderately priced restaurants'
+    },
+    luxury: {
+      hotels: 'upscale luxury hotels',
+      restaurants: 'upscale highly rated restaurants'
+    }
+  };
+  const budgetLevel = pointOfInterest?.budgetLevel || 'moderate';
+  const placeType = descriptors[budgetLevel]?.[category] || descriptors.moderate[category];
+  const locationAnchor = pointOfInterest?.name || '';
+  const location = locationAnchor ? `${destination} near ${locationAnchor}` : destination;
   return `${placeType} in ${location}`;
 }
 
@@ -161,7 +177,14 @@ export async function handlePlacesRequest(request, response, category) {
     });
   }
 
-  const textQuery = buildTextQuery({ category, destination, pointOfInterest });
+  const textQuery = buildTextQuery({
+    category,
+    destination,
+    pointOfInterest: {
+      name: pointOfInterest,
+      budgetLevel
+    }
+  });
   const cacheKey = `${category}:${budgetLevel}:${textQuery.toLowerCase()}`;
   const cached = getCached(cacheKey);
   if (cached) {

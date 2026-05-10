@@ -1,7 +1,15 @@
 import { getBudgetProfile } from './budgetCalculator';
 
-const hotelStyles = ['Central Hotel', 'Garden Suites', 'Vista House', 'Market Stay', 'Heritage Inn'];
-const restaurantStyles = ['Table', 'Kitchen', 'Bistro', 'Noodle Bar', 'Grill'];
+const hotelStylesByBudget = {
+  budget: ['Budget Inn', 'Market Stay', 'Transit Lodge', 'Guest House', 'Value Hotel'],
+  moderate: ['Central Hotel', 'Garden Suites', 'Vista House', 'Market Stay', 'Heritage Inn'],
+  luxury: ['Grand Hotel', 'Premier Suites', 'Landmark Resort', 'Signature House', 'Luxury Tower']
+};
+const restaurantStylesByBudget = {
+  budget: ['Counter', 'Noodle Bar', 'Cafe', 'Market Kitchen', 'Grill'],
+  moderate: ['Table', 'Kitchen', 'Bistro', 'Noodle Bar', 'Grill'],
+  luxury: ['Supper Club', 'Tasting Room', 'Brasserie', 'Omakase', 'Fine Dining']
+};
 
 const destinationProfiles = [
   {
@@ -67,6 +75,10 @@ function googleMapsSearchUrl(query) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
+function getBudgetStyles(stylesByBudget, budgetLevel) {
+  return stylesByBudget[budgetLevel] || stylesByBudget.moderate;
+}
+
 async function requestLiveRecommendations(path, params) {
   if (typeof window === 'undefined') {
     throw new Error('Live recommendations are only available in the browser.');
@@ -93,6 +105,7 @@ function buildFallbackHotels({ destination, pointsOfInterest = [], budgetLevel =
   const destinationProfile = getDestinationProfile(destination);
   const seed = hashText(destination);
   const city = cityName(destination);
+  const hotelStyles = getBudgetStyles(hotelStylesByBudget, budgetLevel);
 
   return hotelStyles.slice(0, 3).map((style, index) => {
     const anchor = pointsOfInterest[index % pointsOfInterest.length] || city;
@@ -118,6 +131,7 @@ function buildFallbackRestaurants({ destination, budgetLevel = 'moderate' }) {
     moderate: '$$',
     luxury: '$$$$'
   };
+  const restaurantStyles = getBudgetStyles(restaurantStylesByBudget, budgetLevel);
 
   return restaurantStyles.slice(0, 3).map((style, index) => {
     const cuisine = pick(destinationProfile.cuisines, seed, index);
