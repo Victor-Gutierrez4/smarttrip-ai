@@ -24,4 +24,17 @@ describe('Budget Calculator', () => {
     expect(result.hotelTotal).toBe(1100);
     expect(result.estimatedTotal).toBe(2200);
   });
+
+  it('compares estimated total against the selected trip budget', () => {
+    const result = calculateBudgetSummary({
+      budgetLevel: 'budget',
+      duration: 2,
+      hotelNightly: 100,
+      maxBudget: 600
+    });
+
+    expect(result.budgetLimit).toBe(600);
+    expect(result.dailyBudget).toBe(300);
+    expect(result.budgetRemaining).toBe(24);
+  });
 });

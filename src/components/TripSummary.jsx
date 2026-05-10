@@ -5,6 +5,7 @@ const money = new Intl.NumberFormat('en-US', {
 });
 
 export default function TripSummary({ summary, selectedHotel }) {
+  const isOverBudget = summary.budgetRemaining < 0;
   const rows = [
     ['Hotel total', summary.hotelTotal],
     ['Food', summary.foodTotal],
@@ -21,8 +22,23 @@ export default function TripSummary({ summary, selectedHotel }) {
           {money.format(summary.dailyAverage)} daily ground average
           {selectedHotel ? ` | ${money.format(summary.hotelNightly)} nightly hotel estimate` : ''}
         </span>
+        <div className={`budget-status ${isOverBudget ? 'over-budget' : 'within-budget'}`}>
+          <strong>{isOverBudget ? 'Over selected budget' : 'Within selected budget'}</strong>
+          <span>
+            {money.format(Math.abs(summary.budgetRemaining))}
+            {isOverBudget ? ' over' : ' remaining'} from {money.format(summary.budgetLimit)}
+          </span>
+        </div>
       </div>
       <ul>
+        <li>
+          <span>Selected trip budget</span>
+          <strong>{money.format(summary.budgetLimit)}</strong>
+        </li>
+        <li>
+          <span>Budget per day</span>
+          <strong>{money.format(summary.dailyBudget)}</strong>
+        </li>
         {selectedHotel && (
           <li>
             <span>Selected hotel</span>

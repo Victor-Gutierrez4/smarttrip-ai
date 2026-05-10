@@ -14,7 +14,8 @@ const defaultForm = {
   pointsText: 'Shibuya Crossing, Tokyo Tower, Akihabara',
   startDate: '2026-06-08',
   endDate: '2026-06-12',
-  budgetLevel: 'moderate'
+  budgetLevel: 'moderate',
+  maxBudget: 1850
 };
 
 function parsePoints(pointsText) {
@@ -40,6 +41,7 @@ export default function App() {
       dateRange: formatTripDates(currentForm.startDate, currentForm.endDate),
       duration,
       budgetLevel: currentForm.budgetLevel,
+      maxBudget: Number(currentForm.maxBudget),
       summary: calculateBudgetSummary({ ...currentForm, duration }),
       itinerary: generateItinerary(pointsOfInterest, duration, currentForm.budgetLevel),
       hotels: [],
@@ -80,9 +82,10 @@ export default function App() {
       calculateBudgetSummary({
         budgetLevel: trip.budgetLevel,
         duration: trip.duration,
-        hotelNightly: selectedHotel?.estimatedPrice
+        hotelNightly: selectedHotel?.estimatedPrice,
+        maxBudget: trip.maxBudget
       }),
-    [selectedHotel, trip.budgetLevel, trip.duration]
+    [selectedHotel, trip.budgetLevel, trip.duration, trip.maxBudget]
   );
 
   return (

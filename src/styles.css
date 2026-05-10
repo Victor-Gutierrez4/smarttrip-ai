@@ -121,6 +121,30 @@ p {
   color: var(--blue);
 }
 
+.budget-range-header,
+.range-labels {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.budget-range-header strong {
+  color: var(--blue);
+  font-size: 1.25rem;
+}
+
+.budget-range {
+  accent-color: var(--blue);
+  margin: 4px 0;
+}
+
+.range-labels {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
 .duration-chip {
   background: #e8f3ef;
   border: 1px solid #c7e4db;
@@ -176,6 +200,32 @@ p {
   font-size: 3rem;
   font-weight: 800;
   margin-bottom: 4px;
+}
+
+.budget-status {
+  border-radius: 8px;
+  display: grid;
+  gap: 2px;
+  margin-top: 16px;
+  padding: 11px 12px;
+}
+
+.budget-status strong {
+  font-size: 0.95rem;
+}
+
+.budget-status span {
+  font-size: 0.9rem;
+}
+
+.within-budget {
+  background: #e8f3ef;
+  color: var(--green);
+}
+
+.over-budget {
+  background: #fff1e8;
+  color: #a14f17;
 }
 
 .summary-panel ul {

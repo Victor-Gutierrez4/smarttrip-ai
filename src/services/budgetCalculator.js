@@ -27,9 +27,10 @@ export function calculateTripTotal(hotelCost, foodCost, transportCost, flightCos
   return hotelCost + foodCost + transportCost + flightCost;
 }
 
-export function calculateBudgetSummary({ budgetLevel, duration, hotelNightly }) {
+export function calculateBudgetSummary({ budgetLevel, duration, hotelNightly, maxBudget }) {
   const days = Math.max(Number(duration) || 1, 1);
   const profile = getBudgetProfile(budgetLevel);
+  const budgetLimit = Number(maxBudget) || 1500;
   const nightlyHotelRate = Number(hotelNightly) || profile.hotelNightly;
   const hotelTotal = nightlyHotelRate * days;
   const foodTotal = profile.restaurantDaily * days;
@@ -43,7 +44,10 @@ export function calculateBudgetSummary({ budgetLevel, duration, hotelNightly }) 
     transportationTotal,
     flightTotal,
     estimatedTotal: calculateTripTotal(hotelTotal, foodTotal, transportationTotal, flightTotal),
-    dailyAverage: Math.round((hotelTotal + foodTotal + transportationTotal) / days)
+    dailyAverage: Math.round((hotelTotal + foodTotal + transportationTotal) / days),
+    budgetLimit,
+    budgetRemaining: budgetLimit - calculateTripTotal(hotelTotal, foodTotal, transportationTotal, flightTotal),
+    dailyBudget: Math.round(budgetLimit / days)
   };
 }
 

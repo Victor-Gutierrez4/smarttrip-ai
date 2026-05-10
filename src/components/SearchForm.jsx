@@ -1,6 +1,12 @@
 import BudgetSelector from './BudgetSelector';
 import { calculateTripDuration, getMinEndDate } from '../services/dateRange';
 
+const money = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0
+});
+
 export default function SearchForm({ form, onChange, onSubmit }) {
   const duration = calculateTripDuration(form.startDate, form.endDate);
   const updateField = (field, value) => {
@@ -65,7 +71,28 @@ export default function SearchForm({ form, onChange, onSubmit }) {
           />
         </div>
         <div className="col-12">
-          <label className="form-label d-block">Budget</label>
+          <div className="budget-range-header">
+            <label className="form-label" htmlFor="maxBudget">Trip Budget</label>
+            <strong>{money.format(Number(form.maxBudget))}</strong>
+          </div>
+          <input
+            className="form-range budget-range"
+            id="maxBudget"
+            max="5000"
+            min="150"
+            step="50"
+            type="range"
+            value={form.maxBudget}
+            onChange={(event) => updateField('maxBudget', Number(event.target.value))}
+          />
+          <div className="range-labels">
+            <span>$150</span>
+            <span>{money.format(Math.round(Number(form.maxBudget) / duration))} per day</span>
+            <span>$5,000</span>
+          </div>
+        </div>
+        <div className="col-12">
+          <label className="form-label d-block">Travel Style</label>
           <BudgetSelector value={form.budgetLevel} onChange={(value) => updateField('budgetLevel', value)} />
         </div>
         <div className="col-12">
