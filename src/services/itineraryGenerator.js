@@ -21,8 +21,9 @@ function googleMapsSearchUrl(query, destination) {
 }
 
 function fallbackPlaceImageUrl(placeName = '', destination = '') {
-  const query = encodeURIComponent(`${placeName} ${destination}`.trim() || 'travel destination');
-  return `https://source.unsplash.com/featured/900x600/?${query}`;
+  const seed = [...(placeName + destination)].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  const id = Math.abs(seed % 100) + 1;
+  return `https://picsum.photos/900/600?random=${id}`;
 }
 
 export function generateItinerary(

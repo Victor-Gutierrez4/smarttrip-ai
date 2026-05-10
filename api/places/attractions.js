@@ -109,8 +109,7 @@ export default async function handler(request, response) {
       : [];
     const nearbyPlaces = nearbyResults.flat();
     const merged = [...poiResults, ...nearbyPlaces.map((place) => mapPlace(place, place.displayName?.text, 'nearby-suggestion'))]
-      .filter(Boolean)
-      .filter((place) => place.photos.length > 0);
+      .filter(Boolean);
     const seen = new Set();
     const uniqueResults = merged.filter((place) => {
       const key = place.id || place.name.toLowerCase();
