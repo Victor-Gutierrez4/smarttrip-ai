@@ -6,8 +6,8 @@ Automated travel planner that generates hotel, food, transportation, and itinera
 ## Features
 - Destination and points-of-interest search
 - Budget selection for Budget, Moderate, and Luxury trips
-- Automated hotel recommendations
-- Automated restaurant recommendations
+- Live Google Places hotel recommendations with demo fallback
+- Live Google Places restaurant recommendations with demo fallback
 - Transportation, food, hotel, and flight cost estimates
 - Generated day-by-day itinerary
 
@@ -15,7 +15,7 @@ Automated travel planner that generates hotel, food, transportation, and itinera
 - React
 - Vite
 - Bootstrap
-- Google Places API-ready service layer
+- Google Places API through Vercel serverless functions
 - Vitest
 
 ## Running Locally
@@ -27,10 +27,16 @@ npm run dev
 Create a `.env` file with:
 
 ```bash
-VITE_GOOGLE_API_KEY=YOUR_API_KEY
+GOOGLE_PLACES_API_KEY=YOUR_PRIVATE_GOOGLE_PLACES_KEY
 ```
 
-The app includes simulated recommendations, so it works for portfolio demos even without an API key.
+The app calls Google Places through serverless API routes and falls back to destination-aware demo recommendations if the key is missing or the API limit is reached.
+
+## API Usage Controls
+- Server requests are limited to 3 hotels and 3 restaurants per search.
+- Google field masks request only the fields used by the UI.
+- Search responses are cached briefly to reduce repeated API calls.
+- A lightweight hourly request limit protects the demo from accidental overuse.
 
 ## Running Tests
 ```bash

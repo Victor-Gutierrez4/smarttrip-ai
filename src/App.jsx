@@ -6,7 +6,7 @@ import TripSummary from './components/TripSummary';
 import Itinerary from './components/Itinerary';
 import { calculateBudgetSummary } from './services/budgetCalculator';
 import { calculateTripDuration, formatTripDates } from './services/dateRange';
-import { fetchHotels, fetchRestaurants, hasGooglePlacesKey } from './services/googlePlaces';
+import { fetchHotels, fetchRestaurants, getRecommendationModeLabel } from './services/googlePlaces';
 import { generateItinerary } from './services/itineraryGenerator';
 
 const defaultForm = {
@@ -51,7 +51,7 @@ export default function App() {
     const nextTrip = buildTrip(currentForm);
     const [hotels, restaurants] = await Promise.all([
       fetchHotels({ ...currentForm, pointsOfInterest: nextTrip.pointsOfInterest }),
-      fetchRestaurants(currentForm)
+      fetchRestaurants({ ...currentForm, pointsOfInterest: nextTrip.pointsOfInterest })
     ]);
 
     setTrip({ ...nextTrip, hotels, restaurants });
@@ -67,10 +67,7 @@ export default function App() {
     generateTrip(defaultForm);
   }, []);
 
-  const apiStatus = useMemo(
-    () => (hasGooglePlacesKey() ? 'Google Places key detected' : 'Demo recommendations active'),
-    []
-  );
+  const apiStatus = useMemo(() => getRecommendationModeLabel(), []);
 
   return (
     <main>

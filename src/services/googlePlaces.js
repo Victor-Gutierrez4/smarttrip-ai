@@ -35,6 +35,7 @@ const fallbackProfile = {
   neighborhoods: ['Old Town', 'City Center', 'Riverside', 'Arts District'],
   cuisines: ['Modern local', 'Street food', 'Regional cafe', 'Market kitchen']
 };
+const liveResultLimit = 3;
 
 function scoreFromText(text, index) {
   const seed = [...text].reduce((total, char) => total + char.charCodeAt(0), index * 17);
@@ -62,7 +63,28 @@ function cityName(destination = 'City') {
   return destination.split(',')[0].trim() || 'City';
 }
 
-export async function fetchHotels({ destination, pointsOfInterest = [], budgetLevel = 'moderate' }) {
+async function requestLiveRecommendations(path, params) {
+  if (typeof window === 'undefined') {
+    throw new Error('Live recommendations are only available in the browser.');
+  }
+
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value) {
+      searchParams.set(key, value);
+    }
+  });
+
+  const response = await fetch(`${path}?${searchParams.toString()}`);
+  if (!response.ok) {
+    throw new Error('Live recommendation request failed.');
+  }
+
+  const data = await response.json();
+  return (data.results || []).slice(0, liveResultLimit);
+}
+
+function buildFallbackHotels({ destination, pointsOfInterest = [], budgetLevel = 'moderate' }) {
   const profile = getBudgetProfile(budgetLevel);
   const destinationProfile = getDestinationProfile(destination);
   const seed = hashText(destination);
@@ -82,7 +104,7 @@ export async function fetchHotels({ destination, pointsOfInterest = [], budgetLe
   });
 }
 
-export async function fetchRestaurants({ destination, budgetLevel = 'moderate' }) {
+function buildFallbackRestaurants({ destination, budgetLevel = 'moderate' }) {
   const destinationProfile = getDestinationProfile(destination);
   const seed = hashText(destination);
   const city = cityName(destination);
@@ -106,6 +128,34 @@ export async function fetchRestaurants({ destination, budgetLevel = 'moderate' }
   });
 }
 
-export function hasGooglePlacesKey() {
-  return Boolean(import.meta.env.VITE_GOOGLE_API_KEY && import.meta.env.VITE_GOOGLE_API_KEY !== 'YOUR_API_KEY');
+export async function fetchHotels({ destination, pointsOfInterest = [], budgetLevel = 'moderate' }) {
+  try {
+    const hotels = await requestLiveRecommendations('/api/places/hotels', {
+      destination,
+      poi: pointsOfInterest[0],
+      budgetLevel
+    });
+
+    return hotels.length ? hotels : buildFallbackHotels({ destination, pointsOfInterest, budgetLevel });
+  } catch {
+    return buildFallbackHotels({ destination, pointsOfInterest, budgetLevel });
+  }
+}
+
+export async function fetchRestaurants({ destination, pointsOfInterest = [], budgetLevel = 'moderate' }) {
+  try {
+    const restaurants = await requestLiveRecommendations('/api/places/restaurants', {
+      destination,
+      poi: pointsOfInterest[0],
+      budgetLevel
+    });
+
+    return restaurants.length ? restaurants : buildFallbackRestaurants({ destination, budgetLevel });
+  } catch {
+    return buildFallbackRestaurants({ destination, budgetLevel });
+  }
+}
+
+export function getRecommendationModeLabel() {
+  return 'Google Places API with demo fallback';
 }
