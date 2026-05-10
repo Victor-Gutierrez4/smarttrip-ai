@@ -9,10 +9,19 @@ describe('Budget Calculator', () => {
   it('changes totals by budget level and duration', () => {
     const result = calculateBudgetSummary({ budgetLevel: 'moderate', duration: 5 });
 
+    expect(result.hotelNightly).toBe(170);
     expect(result.hotelTotal).toBe(850);
     expect(result.foodTotal).toBe(425);
     expect(result.transportationTotal).toBe(175);
     expect(result.flightTotal).toBe(500);
     expect(result.estimatedTotal).toBe(1950);
+  });
+
+  it('uses a selected hotel nightly rate when provided', () => {
+    const result = calculateBudgetSummary({ budgetLevel: 'moderate', duration: 5, hotelNightly: 220 });
+
+    expect(result.hotelNightly).toBe(220);
+    expect(result.hotelTotal).toBe(1100);
+    expect(result.estimatedTotal).toBe(2200);
   });
 });

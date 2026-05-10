@@ -27,15 +27,17 @@ export function calculateTripTotal(hotelCost, foodCost, transportCost, flightCos
   return hotelCost + foodCost + transportCost + flightCost;
 }
 
-export function calculateBudgetSummary({ budgetLevel, duration }) {
+export function calculateBudgetSummary({ budgetLevel, duration, hotelNightly }) {
   const days = Math.max(Number(duration) || 1, 1);
   const profile = getBudgetProfile(budgetLevel);
-  const hotelTotal = profile.hotelNightly * days;
+  const nightlyHotelRate = Number(hotelNightly) || profile.hotelNightly;
+  const hotelTotal = nightlyHotelRate * days;
   const foodTotal = profile.restaurantDaily * days;
   const transportationTotal = profile.transportDaily * days;
   const flightTotal = profile.flightEstimate;
 
   return {
+    hotelNightly: nightlyHotelRate,
     hotelTotal,
     foodTotal,
     transportationTotal,

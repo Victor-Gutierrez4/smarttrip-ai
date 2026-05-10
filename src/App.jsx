@@ -27,6 +27,7 @@ function parsePoints(pointsText) {
 export default function App() {
   const [form, setForm] = useState(defaultForm);
   const [trip, setTrip] = useState(() => buildTrip(defaultForm));
+  const [selectedHotelId, setSelectedHotelId] = useState('');
   const [loading, setLoading] = useState(false);
 
   function buildTrip(currentForm) {
@@ -38,6 +39,7 @@ export default function App() {
       pointsOfInterest,
       dateRange: formatTripDates(currentForm.startDate, currentForm.endDate),
       duration,
+      budgetLevel: currentForm.budgetLevel,
       summary: calculateBudgetSummary({ ...currentForm, duration }),
       itinerary: generateItinerary(pointsOfInterest, duration, currentForm.budgetLevel),
       hotels: [],
@@ -55,6 +57,7 @@ export default function App() {
     ]);
 
     setTrip({ ...nextTrip, hotels, restaurants });
+    setSelectedHotelId(hotels[0]?.id || '');
     setLoading(false);
   }
 
@@ -68,6 +71,19 @@ export default function App() {
   }, []);
 
   const apiStatus = useMemo(() => getRecommendationModeLabel(), []);
+  const selectedHotel = useMemo(
+    () => trip.hotels.find((hotel) => hotel.id === selectedHotelId) || trip.hotels[0],
+    [selectedHotelId, trip.hotels]
+  );
+  const displayedSummary = useMemo(
+    () =>
+      calculateBudgetSummary({
+        budgetLevel: trip.budgetLevel,
+        duration: trip.duration,
+        hotelNightly: selectedHotel?.estimatedPrice
+      }),
+    [selectedHotel, trip.budgetLevel, trip.duration]
+  );
 
   return (
     <main>
@@ -92,10 +108,10 @@ export default function App() {
             <p className="eyebrow">{apiStatus}</p>
             <h2>{trip.destination}</h2>
           </div>
-          <span>{trip.dateRange} · {trip.duration} day trip · {trip.pointsOfInterest.length} points of interest</span>
+          <span>{trip.dateRange} | {trip.duration} day trip | {trip.pointsOfInterest.length} points of interest</span>
         </div>
 
-        <TripSummary summary={trip.summary} />
+        <TripSummary summary={displayedSummary} selectedHotel={selectedHotel} />
 
         <div className="row g-4 mt-1">
           <div className="col-lg-6">
@@ -103,7 +119,12 @@ export default function App() {
               <h2>Hotels</h2>
               {trip.hotels.length === 0 && <p className="empty-state">Loading hotel recommendations.</p>}
               {trip.hotels.map((hotel) => (
-                <HotelCard hotel={hotel} key={hotel.id} />
+                <HotelCard
+                  hotel={hotel}
+                  isSelected={hotel.id === selectedHotel?.id}
+                  key={hotel.id}
+                  onSelect={() => setSelectedHotelId(hotel.id)}
+                />
               ))}
             </div>
           </div>

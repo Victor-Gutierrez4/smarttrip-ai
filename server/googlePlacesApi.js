@@ -74,18 +74,27 @@ function mapPriceLevel(priceLevel) {
   return priceMap[priceLevel] || '$$';
 }
 
+function hashText(text = '') {
+  return [...text.toLowerCase()].reduce((total, char) => total + char.charCodeAt(0), 0);
+}
+
+function googleMapsSearchUrl(query) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
 function mapPlace(place, category, index, budgetLevel) {
   const displayName = place.displayName?.text || (category === 'hotels' ? 'Recommended hotel' : 'Recommended restaurant');
   const rating = Number(place.rating || 4.2);
+  const placeUrl = place.googleMapsUri || googleMapsSearchUrl(`${displayName} ${place.formattedAddress || ''}`);
 
   if (category === 'hotels') {
     return {
       id: place.id || `google-hotel-${index}`,
       name: displayName,
       rating,
-      estimatedPrice: estimateHotelPrice(place.priceLevel, budgetLevel, index),
+      estimatedPrice: estimateHotelPrice(place.priceLevel, budgetLevel, index, displayName, rating),
       distance: place.formattedAddress || 'Google Places result',
-      placeUrl: place.googleMapsUri
+      placeUrl
     };
   }
 
@@ -96,11 +105,11 @@ function mapPlace(place, category, index, budgetLevel) {
     priceCategory: mapPriceLevel(place.priceLevel),
     cuisine: formatCuisine(place.types),
     address: place.formattedAddress,
-    placeUrl: place.googleMapsUri
+    placeUrl
   };
 }
 
-function estimateHotelPrice(priceLevel, budgetLevel, index) {
+function estimateHotelPrice(priceLevel, budgetLevel, index, placeName, rating) {
   const fallback = {
     budget: 95,
     moderate: 170,
@@ -112,8 +121,11 @@ function estimateHotelPrice(priceLevel, budgetLevel, index) {
     PRICE_LEVEL_EXPENSIVE: 285,
     PRICE_LEVEL_VERY_EXPENSIVE: 420
   };
+  const nameAdjustment = hashText(placeName) % 45;
+  const ratingAdjustment = Math.max(Math.round((rating - 4) * 30), 0);
+  const baseRate = priceByGoogleLevel[priceLevel] || fallback[budgetLevel] || fallback.moderate;
 
-  return priceByGoogleLevel[priceLevel] || fallback[budgetLevel] + index * 25 || 170;
+  return baseRate + nameAdjustment + ratingAdjustment + index * 15;
 }
 
 function formatCuisine(types = []) {

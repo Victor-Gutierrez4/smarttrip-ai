@@ -207,6 +207,15 @@ p {
   color: var(--blue);
 }
 
+.selected-result {
+  background: #f5fbf8;
+  box-shadow: inset 4px 0 0 var(--green);
+  margin-left: -8px;
+  margin-right: -8px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
 .interactive-result {
   cursor: pointer;
   outline-offset: 4px;
@@ -278,6 +287,11 @@ p {
   display: grid;
   justify-items: end;
   white-space: nowrap;
+}
+
+.result-meta small {
+  color: var(--green);
+  font-weight: 800;
 }
 
 .itinerary-panel {
