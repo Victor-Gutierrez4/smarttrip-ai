@@ -4,7 +4,6 @@ const fieldMask = [
   'places.displayName',
   'places.formattedAddress',
   'places.rating',
-  'places.priceLevel',
   'places.googleMapsUri',
   'places.photos',
   'places.types'
@@ -64,15 +63,14 @@ function setCached(cacheKey, data) {
   });
 }
 
-function mapPriceLevel(priceLevel) {
+function mapBudgetPriceCategory(budgetLevel) {
   const priceMap = {
-    PRICE_LEVEL_INEXPENSIVE: '$',
-    PRICE_LEVEL_MODERATE: '$$',
-    PRICE_LEVEL_EXPENSIVE: '$$$',
-    PRICE_LEVEL_VERY_EXPENSIVE: '$$$$'
+    budget: '$',
+    moderate: '$$',
+    luxury: '$$$$'
   };
 
-  return priceMap[priceLevel] || '$$';
+  return priceMap[budgetLevel] || '$$';
 }
 
 function hashText(text = '') {
@@ -97,7 +95,7 @@ function mapPlace(place, category, index, budgetLevel) {
       id: place.id || `google-hotel-${index}`,
       name: displayName,
       rating,
-      estimatedPrice: estimateHotelPrice(place.priceLevel, budgetLevel, index, displayName, rating),
+      estimatedPrice: estimateHotelPrice(budgetLevel, index, displayName, rating),
       distance: place.formattedAddress || 'Google Places result',
       placeUrl,
       photos: photoUrls(place.photos),
@@ -109,7 +107,7 @@ function mapPlace(place, category, index, budgetLevel) {
     id: place.id || `google-restaurant-${index}`,
     name: displayName,
     rating,
-    priceCategory: mapPriceLevel(place.priceLevel),
+    priceCategory: mapBudgetPriceCategory(budgetLevel),
     cuisine: formatCuisine(place.types),
     address: place.formattedAddress,
     placeUrl,
@@ -118,21 +116,15 @@ function mapPlace(place, category, index, budgetLevel) {
   };
 }
 
-function estimateHotelPrice(priceLevel, budgetLevel, index, placeName, rating) {
+function estimateHotelPrice(budgetLevel, index, placeName, rating) {
   const fallback = {
     budget: 95,
     moderate: 170,
     luxury: 340
   };
-  const priceByGoogleLevel = {
-    PRICE_LEVEL_INEXPENSIVE: 105,
-    PRICE_LEVEL_MODERATE: 175,
-    PRICE_LEVEL_EXPENSIVE: 285,
-    PRICE_LEVEL_VERY_EXPENSIVE: 420
-  };
   const nameAdjustment = hashText(placeName) % 45;
   const ratingAdjustment = Math.max(Math.round((rating - 4) * 30), 0);
-  const baseRate = priceByGoogleLevel[priceLevel] || fallback[budgetLevel] || fallback.moderate;
+  const baseRate = fallback[budgetLevel] || fallback.moderate;
 
   return baseRate + nameAdjustment + ratingAdjustment + index * 15;
 }
@@ -140,16 +132,6 @@ function estimateHotelPrice(priceLevel, budgetLevel, index, placeName, rating) {
 function formatCuisine(types = []) {
   const readableType = types.find((type) => !['restaurant', 'food', 'point_of_interest', 'establishment'].includes(type));
   return readableType ? readableType.replaceAll('_', ' ') : 'Restaurant';
-}
-
-function getPriceLevels(budgetLevel) {
-  const levels = {
-    budget: ['PRICE_LEVEL_INEXPENSIVE', 'PRICE_LEVEL_MODERATE'],
-    moderate: ['PRICE_LEVEL_MODERATE'],
-    luxury: ['PRICE_LEVEL_EXPENSIVE', 'PRICE_LEVEL_VERY_EXPENSIVE']
-  };
-
-  return levels[budgetLevel] || levels.moderate;
 }
 
 function buildTextQuery({ category, destination, pointOfInterest }) {
@@ -220,16 +202,16 @@ export async function handlePlacesRequest(request, response, category) {
       },
       body: JSON.stringify({
         textQuery,
-        includedType: category === 'hotels' ? 'lodging' : 'restaurant',
         maxResultCount: maxResults,
-        priceLevels: getPriceLevels(budgetLevel),
         languageCode: 'en'
       })
     });
 
     if (!googleResponse.ok) {
+      const errorBody = await googleResponse.json().catch(() => ({}));
       return response.status(googleResponse.status).json({
-        error: 'Google Places request failed.'
+        error: 'Google Places request failed.',
+        details: errorBody.error?.message || 'No Google error message returned.'
       });
     }
 
