@@ -38,12 +38,7 @@ export default function RestaurantCard({ restaurant, onViewMap }) {
         <strong>{restaurant.name}</strong>
         <span>{restaurant.rating.toFixed(1)} rating | {restaurant.priceCategory}</span>
         <span>{restaurant.address || restaurant.cuisine}</span>
-        <div className="card-actions">
-          <button type="button" className="map-button" onClick={onViewMap}>
-            Preview on map
-          </button>
-          <span>Tap the card to preview or the name to open Google Maps</span>
-        </div>
+        <span>Tap the card to preview or the name to open Google Maps</span>
       </div>
     </div>
   );

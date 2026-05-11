@@ -3,7 +3,7 @@ function mapEmbedUrl(place) {
   return `https://www.google.com/maps?q=${query}&output=embed`;
 }
 
-export default function HotelCard({ hotel, isSelected, onSelect, onViewMap }) {
+export default function HotelCard({ hotel, isSelected, onSelect }) {
   return (
     <div className={`result-card interactive-result ${isSelected ? 'selected-result' : ''}`}>
       <button type="button" className="interactive-card-button" onClick={onSelect}>
@@ -41,12 +41,7 @@ export default function HotelCard({ hotel, isSelected, onSelect, onViewMap }) {
         <span>{hotel.rating.toFixed(1)} rating</span>
         <span>${hotel.estimatedPrice}/night estimate | {hotel.distance}</span>
         {hotel.priceContext && <span>{hotel.priceContext}</span>}
-        <div className="card-actions">
-          <button type="button" className="map-button" onClick={onViewMap}>
-            Preview on map
-          </button>
-          <span>{isSelected ? 'Selected hotel used in budget' : 'Tap to use in trip budget'}</span>
-        </div>
+        <span>{isSelected ? 'Selected hotel used in budget' : 'Tap to use in trip budget'}</span>
       </div>
     </div>
   );
