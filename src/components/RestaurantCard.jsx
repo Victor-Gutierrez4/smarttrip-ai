@@ -4,6 +4,8 @@ function mapEmbedUrl(place) {
 }
 
 export default function RestaurantCard({ restaurant, onViewMap }) {
+  const previewPhoto = restaurant.photos?.[0];
+
   return (
     <div className="result-card interactive-result">
       <button type="button" className="interactive-card-button" onClick={onViewMap}>
@@ -27,6 +29,14 @@ export default function RestaurantCard({ restaurant, onViewMap }) {
         </div>
       </button>
       <div className="place-preview" role="tooltip">
+        {previewPhoto && (
+          <img
+            alt={`${restaurant.name} preview`}
+            className="place-preview-photo"
+            loading="lazy"
+            src={previewPhoto}
+          />
+        )}
         <div className="mini-map-frame">
           <iframe
             title={`${restaurant.name} map preview`}

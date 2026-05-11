@@ -4,6 +4,8 @@ function mapEmbedUrl(place) {
 }
 
 export default function HotelCard({ hotel, isSelected, onSelect }) {
+  const previewPhoto = hotel.photos?.[0];
+
   return (
     <div className={`result-card interactive-result ${isSelected ? 'selected-result' : ''}`}>
       <button type="button" className="interactive-card-button" onClick={onSelect}>
@@ -29,6 +31,14 @@ export default function HotelCard({ hotel, isSelected, onSelect }) {
         </div>
       </button>
       <div className="place-preview" role="tooltip">
+        {previewPhoto && (
+          <img
+            alt={`${hotel.name} preview`}
+            className="place-preview-photo"
+            loading="lazy"
+            src={previewPhoto}
+          />
+        )}
         <div className="mini-map-frame">
           <iframe
             title={`${hotel.name} map preview`}
