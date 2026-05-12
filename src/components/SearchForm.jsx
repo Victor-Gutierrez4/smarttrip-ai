@@ -22,24 +22,24 @@ export default function SearchForm({ form, onChange, onSubmit }) {
     <form className="planner-panel" onSubmit={onSubmit}>
       <div className="row g-3">
         <div className="col-12">
-          <label className="form-label" htmlFor="destination">Destination</label>
-          <input
-            className="form-control"
-            id="destination"
-            placeholder="Tokyo, Japan"
-            value={form.destination}
-            onChange={(event) => updateField('destination', event.target.value)}
-            required
-          />
-        </div>
-        <div className="col-md-6">
           <label className="form-label" htmlFor="startLocation">Starting Location</label>
           <input
             className="form-control"
             id="startLocation"
-            placeholder="Los Angeles, CA"
+            placeholder="City, state, or airport code, like Newark, NJ or EWR"
             value={form.startLocation}
             onChange={(event) => updateField('startLocation', event.target.value)}
+            required
+          />
+        </div>
+        <div className="col-12">
+          <label className="form-label" htmlFor="destination">Destination</label>
+          <input
+            className="form-control"
+            id="destination"
+            placeholder="City, country, or airport code, like Tokyo, Japan or HND"
+            value={form.destination}
+            onChange={(event) => updateField('destination', event.target.value)}
             required
           />
         </div>
