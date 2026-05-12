@@ -4,6 +4,7 @@ import HotelCard from './components/HotelCard';
 import RestaurantCard from './components/RestaurantCard';
 import TripSummary from './components/TripSummary';
 import Itinerary from './components/Itinerary';
+import TripAssistant from './components/TripAssistant';
 import { fetchAttractionPhotos } from './services/attractionPhotos';
 import { calculateBudgetSummary, getBudgetLevelFromTripBudget } from './services/budgetCalculator';
 import { calculateTripDuration, formatTripDates } from './services/dateRange';
@@ -265,6 +266,12 @@ function App() {
 
         {loading && <div className="loading-bar">Generating recommendations...</div>}
       </section>
+      <TripAssistant
+        itinerary={displayedItinerary}
+        selectedHotel={selectedHotel}
+        summary={displayedSummary}
+        trip={trip}
+      />
     </main>
   );
 }
