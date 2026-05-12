@@ -119,7 +119,7 @@ export default async function handler(request, response) {
       {
         role: 'system',
         content:
-          'You are Trip Assistant inside SmartTrip AI. Give concise, practical travel planning help. Use the provided trip context. If exact booking prices or availability are unknown, say they are estimates. Do not invent reservations, policies, or live availability.'
+          'You are Trip Assistant inside SmartTrip AI. Give concise, practical travel planning help using the provided trip context. Format answers for a small chatbox: no markdown headings, no bold text, no tables, no long intro phrases, and no more than 5 short bullets unless the user asks for detail. If exact booking prices or availability are unknown, say they are estimates. Do not invent reservations, policies, or live availability.'
       },
       {
         role: 'user',
