@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 
-const model = 'gpt-5-nano';
+const primaryModel = 'gpt-5-nano';
+const fallbackModel = 'gpt-4.1-nano';
 const maxMessageLength = 600;
 const maxHistoryItems = 6;
 const maxRequestsPerHour = 20;
@@ -96,27 +97,50 @@ export default async function handler(request, response) {
     .map((item) => `${item.role === 'assistant' ? 'Assistant' : 'User'}: ${cleanText(item.content, 400)}`)
     .join('\n');
 
+  const requestBody = {
+    max_output_tokens: 220,
+    input: [
+      {
+        role: 'system',
+        content:
+          'You are Trip Assistant inside SmartTrip AI. Give concise, practical travel planning help. Use the provided trip context. If exact booking prices or availability are unknown, say they are estimates. Do not invent reservations, policies, or live availability.'
+      },
+      {
+        role: 'user',
+        content: `Trip context:\n${tripSummary}\n\nRecent chat:\n${conversation || 'No previous messages.'}\n\nUser question: ${message}`
+      }
+    ]
+  };
+
   try {
-    const aiResponse = await client.responses.create({
-      model,
-      max_output_tokens: 220,
-      input: [
-        {
-          role: 'system',
-          content:
-            'You are Trip Assistant inside SmartTrip AI. Give concise, practical travel planning help. Use the provided trip context. If exact booking prices or availability are unknown, say they are estimates. Do not invent reservations, policies, or live availability.'
-        },
-        {
-          role: 'user',
-          content: `Trip context:\n${tripSummary}\n\nRecent chat:\n${conversation || 'No previous messages.'}\n\nUser question: ${message}`
-        }
-      ]
-    });
+    let aiResponse;
+
+    try {
+      aiResponse = await client.responses.create({
+        model: primaryModel,
+        ...requestBody
+      });
+    } catch (error) {
+      const status = error?.status || error?.code;
+      const shouldFallback = status === 400 || status === 403 || status === 404;
+
+      if (!shouldFallback) {
+        throw error;
+      }
+
+      aiResponse = await client.responses.create({
+        model: fallbackModel,
+        ...requestBody
+      });
+    }
 
     return response.status(200).json({
       answer: aiResponse.output_text || 'I could not generate an answer right now.'
     });
-  } catch {
-    return response.status(502).json({ error: 'Trip Assistant is temporarily unavailable.' });
+  } catch (error) {
+    return response.status(error.status || 502).json({
+      error: 'Trip Assistant is temporarily unavailable.',
+      details: error.message || 'No OpenAI error message returned.'
+    });
   }
 }
