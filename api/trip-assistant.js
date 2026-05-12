@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 
-const primaryModel = 'gpt-5-nano';
-const fallbackModel = 'gpt-4.1-nano';
+const primaryModel = 'gpt-5.4-mini';
+const fallbackModel = 'gpt-5.4-mini';
 const maxMessageLength = 600;
 const maxHistoryItems = 6;
 const maxRequestsPerHour = 20;
@@ -65,6 +65,22 @@ function summarizeTrip(trip = {}) {
     `Restaurants: ${restaurants || 'none loaded'}`,
     `Itinerary: ${itinerary || 'none loaded'}`
   ].join('\n');
+}
+
+function extractResponseText(aiResponse) {
+  if (aiResponse.output_text) {
+    return aiResponse.output_text;
+  }
+
+  const output = Array.isArray(aiResponse.output) ? aiResponse.output : [];
+  const text = output
+    .flatMap((item) => (Array.isArray(item.content) ? item.content : []))
+    .map((content) => content.text || content.value || '')
+    .filter(Boolean)
+    .join('\n')
+    .trim();
+
+  return text;
 }
 
 export default async function handler(request, response) {
@@ -134,8 +150,10 @@ export default async function handler(request, response) {
       });
     }
 
+    const answer = extractResponseText(aiResponse);
+
     return response.status(200).json({
-      answer: aiResponse.output_text || 'I could not generate an answer right now.'
+      answer: answer || 'I could not generate an answer right now.'
     });
   } catch (error) {
     return response.status(error.status || 502).json({
